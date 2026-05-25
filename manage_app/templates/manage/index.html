@@ -1,0 +1,39 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}控制台{% endblock %}
+{% block menu_index %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">控制台</h1>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-title">商品总数</div>
+    <div class="stat-value">{{ goods_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">商品分类</div>
+    <div class="stat-value">{{ category_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">进行中的秒杀</div>
+    <div class="stat-value">{{ flashsale_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">注册用户</div>
+    <div class="stat-value">{{ user_count }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">快捷操作</div>
+  <div class="card-body">
+    <a href="/manage/goods/add/" class="btn btn-primary">&#128230; 添加商品</a>
+    <a href="/manage/categories/add/" class="btn btn-success">&#128193; 添加分类</a>
+    <a href="/manage/flashsale/add/" class="btn btn-warning">&#9889; 创建秒杀</a>
+    <a href="/manage/goods/" class="btn btn-default">查看商品列表</a>
+  </div>
+</div>
+{% endblock %}

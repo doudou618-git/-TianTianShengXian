@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>订单支付 - 天天生鲜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.5;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; }
+
+    :root {
+      --primary: #1a5c2e;
+      --primary-light: #2e7d32;
+      --primary-lighter: #e8f5e9;
+      --accent: #c8963e;
+      --danger: #d32f2f;
+      --text: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --text-tertiary: #86868b;
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --border: #e5e5e7;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header */
+    .header {
+      background: var(--card);
+      box-shadow: 0 1px 0 var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+
+    /* Steps */
+    .steps {
+      max-width: 600px;
+      margin: 24px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+    }
+    .step.active { color: var(--primary); font-weight: 600; }
+    .step.completed { color: var(--primary-light); }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .step.active .step-num { background: var(--primary); color: #fff; }
+    .step.completed .step-num { background: var(--primary-light); color: #fff; }
+    .step-line {
+      width: 60px;
+      height: 2px;
+      background: var(--border);
+      margin: 0 12px;
+    }
+    .step-line.active { background: var(--primary); }
+
+    /* Container */
+    .container {
+      max-width: 800px;
+      margin: 0 auto 40px;
+      padding: 0 24px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-body {
+      padding: 20px;
+    }
+
+    /* Address */
+    .address-info {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .address-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-lighter);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .address-detail { flex: 1; }
+    .address-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+    .address-phone {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .address-text {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+    }
+
+    /* Order Items */
+    .order-item {
+      display: flex;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .order-item:last-child { border-bottom: none; }
+    .order-item-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .order-item-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .order-item-info { flex: 1; }
+    .order-item-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .order-item-price {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .price { color: var(--danger); font-weight: 700; }
+
+    /* Payment Methods */
+    .payment-methods {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .payment-method {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .payment-method:hover {
+      border-color: var(--primary-light);
+      background: var(--primary-lighter);
+    }
+    .payment-method.selected {
+      border-color: var(--primary);
+      background: var(--primary-lighter);
+    }
+    .payment-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    .payment-icon.wechat { background: #e8f5e9; }
+    .payment-icon.alipay { background: #e3f2fd; }
+    .payment-icon.cod { background: #fff3e0; }
+    .payment-name {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .payment-desc {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .payment-radio {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .payment-method.selected .payment-radio {
+      border-color: var(--primary);
+    }
+    .payment-method.selected .payment-radio::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    /* Total */
+    .order-total {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0 0;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+    }
+    .total-label {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+    .total-amount {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--danger);
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .btn {
+      padding: 12px 32px;
+      border-radius: 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all var(--transition);
+      border: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Success Overlay */
+    .success-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .success-overlay.show { display: flex; }
+    .success-box {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      padding: 48px 60px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      animation: popIn 0.3s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--primary-lighter);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      margin: 0 auto 20px;
+    }
+    .success-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .success-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .success-order {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin-bottom: 24px;
+    }
+    .success-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(0,0,0,0.78);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* Footer */
+    .footer {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+    }
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <a href="/home/" class="logo">天天<span>生鲜</span></a>
+    <div style="font-size: 0.9rem; color: var(--text-secondary);">订单支付</div>
+  </div>
+</header>
+
+<!-- Steps -->
+<div class="steps">
+  <div class="step completed">
+    <span class="step-num">&#10003;</span>
+    <span>选择商品</span>
+  </div>
+  <div class="step-line active"></div>
+  <div class="step completed">
+    <span class="step-num">&#10003;</span>
+    <span>确认地址</span>
+  </div>
+  <div class="step-line active"></div>
+  <div class="step active">
+    <span class="step-num">3</span>
+    <span>支付</span>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+  <!-- 收货地址 -->
+  <div class="card">
+    <div class="card-header">
+      &#128205; 收货地址
+    </div>
+    <div class="card-body">
+      <div class="address-info">
+        <div class="address-icon">&#128205;</div>
+        <div class="address-detail">
+          <div class="address-name">{{ order.receiver_name }}</div>
+          <div class="address-phone">{{ order.receiver_mobile }}</div>
+          <div class="address-text">{{ order.receiver_address }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 订单商品 -->
+  <div class="card">
+    <div class="card-header">
+      &#128230; 订单商品
+    </div>
+    <div class="card-body">
+      {% for item in goods_items %}
+      <div class="order-item">
+        <div class="order-item-img">
+          {% if item.goods.image %}
+          <img src="{{ item.goods.image.url }}" alt="{{ item.goods.name }}">
+          {% else %}
+          &#128230;
+          {% endif %}
+        </div>
+        <div class="order-item-info">
+          <div class="order-item-name">{{ item.goods.name }}</div>
+          <div class="order-item-price">
+            <span class="price">&#165;{{ item.price }}</span>
+            <span style="color:var(--text-tertiary);font-size:0.85rem;">x{{ item.quantity }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="order-total">
+        <span class="total-label">应付总额：</span>
+        <span class="total-amount">&#165;{{ order.total_amount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 支付方式 -->
+  <div class="card">
+    <div class="card-header">
+      &#128179; 支付方式
+    </div>
+    <div class="card-body">
+      <div class="payment-methods">
+        <div class="payment-method selected" onclick="selectPayment(this, 'wechat')">
+          <div class="payment-icon wechat">&#128174;</div>
+          <div>
+            <div class="payment-name">微信支付</div>
+            <div class="payment-desc">使用微信扫码支付</div>
+          </div>
+          <div class="payment-radio"></div>
+        </div>
+        <div class="payment-method" onclick="selectPayment(this, 'alipay')">
+          <div class="payment-icon alipay">&#128178;</div>
+          <div>
+            <div class="payment-name">支付宝支付</div>
+            <div class="payment-desc">使用支付宝扫码支付</div>
+          </div>
+          <div class="payment-radio"></div>
+        </div>
+        <div class="payment-method" onclick="selectPayment(this, 'cod')">
+          <div class="payment-icon cod">&#128666;</div>
+          <div>
+            <div class="payment-name">货到付款</div>
+            <div class="payment-desc">收到商品后再付款</div>
+          </div>
+          <div class="payment-radio"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作按钮 -->
+  <div class="btn-group">
+    <button class="btn btn-outline" onclick="cancelPay()">取消订单</button>
+    <button class="btn btn-primary" onclick="confirmPay()">确认支付 &#165;{{ order.total_amount }}</button>
+  </div>
+</div>
+
+<!-- 支付确认弹窗 -->
+<div class="success-overlay" id="payConfirmOverlay">
+  <div class="success-box">
+    <div class="success-icon" style="background:#fff3e0;">&#128179;</div>
+    <div class="success-title">确认支付</div>
+    <div class="success-desc">请选择支付方式后确认</div>
+    <div class="success-order">支付金额：<span style="color:var(--danger);font-weight:700;font-size:1.3rem;">&#165;{{ order.total_amount }}</span></div>
+    <div class="success-btns">
+      <button class="btn btn-outline" onclick="cancelPayToPending()">取消支付</button>
+      <button class="btn btn-primary" onclick="doConfirmPay()">确认支付</button>
+    </div>
+  </div>
+</div>
+
+<!-- 支付成功弹窗 -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="success-icon">&#10003;</div>
+    <div class="success-title">支付成功</div>
+    <div class="success-desc">您的订单已提交成功</div>
+    <div class="success-order">订单号：{{ order.order_no }}</div>
+    <div class="success-btns">
+      <button class="btn btn-outline" onclick="goHome()">返回首页</button>
+      <button class="btn btn-primary" onclick="goOrders()">查看订单</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p class="footer-copy">&#169; 2026 天天生鲜 版权所有 | 增值电信业务经营许可证 | 食品经营许可证</p>
+</footer>
+
+<script>
+const orderId = {{ order.id }};
+let selectedPayment = 'wechat';
+
+function selectPayment(el, method) {
+  document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayment = method;
+}
+
+function confirmPay() {
+  // 显示确认弹窗
+  document.getElementById('payConfirmOverlay').classList.add('show');
+}
+
+function closePayConfirm() {
+  document.getElementById('payConfirmOverlay').classList.remove('show');
+}
+
+async function doConfirmPay() {
+  closePayConfirm();
+  try {
+    const response = await fetch(`/order/${orderId}/pay/confirm/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ payment_method: selectedPayment }),
+    });
+
+    const data = await response.json();
+    if (data.code === 200) {
+      document.getElementById('successOverlay').classList.add('show');
+    } else {
+      showToast(data.msg || '支付失败');
+    }
+  } catch (error) {
+    showToast('网络错误，请重试');
+  }
+}
+
+// 取消支付：订单保留在待付款状态，设置30分钟过期
+async function cancelPayToPending() {
+  closePayConfirm();
+  try {
+    const response = await fetch(`/order/${orderId}/set-expire/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    });
+
+    const data = await response.json();
+    if (data.code === 200) {
+      showToast('订单已保留，30分钟内可继续支付');
+      setTimeout(() => {
+        window.location.href = '/user/center/?tab=orders';
+      }, 1500);
+    } else {
+      showToast(data.msg || '操作失败');
+    }
+  } catch (error) {
+    showToast('网络错误，请重试');
+  }
+}
+
+// 取消订单（彻底取消）
+async function cancelPay() {
+  if (!confirm('确定要取消订单吗？')) return;
+
+  try {
+    const response = await fetch(`/order/${orderId}/cancel/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    });
+
+    const data = await response.json();
+    if (data.code === 200) {
+      showToast('订单已取消');
+      setTimeout(() => {
+        window.location.href = '/home/';
+      }, 1000);
+    } else {
+      showToast(data.msg || '取消失败');
+    }
+  } catch (error) {
+    showToast('网络错误，请重试');
+  }
+}
+
+function goHome() {
+  window.location.href = '/home/';
+}
+
+function goOrders() {
+  window.location.href = '/user/center/?tab=orders';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+
+</body>
+</html>

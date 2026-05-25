@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新建收货地址 - 天天生鲜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    .page-wrapper {
+      width: 520px;
+      max-width: 92vw;
+    }
+
+    /* Logo */
+    .page-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .page-logo .logo-text {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #2e7d32;
+    }
+    .page-logo .logo-text span {
+      color: #ff6f00;
+    }
+    .page-logo .logo-sub {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* Card */
+    .form-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(46, 125, 50, 0.12);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .form-header {
+      padding: 20px 32px;
+      border-bottom: 2px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .form-header .icon {
+      font-size: 1.4rem;
+    }
+    .form-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+    .form-header .back-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid #e0e0e0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .form-header .back-btn:hover {
+      border-color: #2e7d32;
+      color: #2e7d32;
+    }
+
+    /* Form Body */
+    .form-body {
+      padding: 28px 32px 32px;
+    }
+
+    /* Form Group */
+    .form-group {
+      margin-bottom: 22px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .form-group label .required {
+      color: #e53935;
+      margin-left: 2px;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      color: #bbb;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+    .input-wrapper input,
+    .input-wrapper textarea {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+      background: #fafafa;
+      font-family: inherit;
+    }
+    .input-wrapper textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
+    .input-wrapper input:focus,
+    .input-wrapper textarea:focus {
+      border-color: #2e7d32;
+      background: #fff;
+    }
+    .input-wrapper input:focus ~ .icon,
+    .input-wrapper textarea:focus ~ .icon {
+      color: #2e7d32;
+    }
+
+    /* Character Count */
+    .char-count {
+      text-align: right;
+      font-size: 0.75rem;
+      color: #bbb;
+      margin-top: 4px;
+    }
+    .char-count.warn { color: #ff9800; }
+    .char-count.over { color: #e53935; }
+
+    /* Checkbox */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      accent-color: #2e7d32;
+      width: 16px;
+      height: 16px;
+    }
+    .checkbox-group label {
+      font-size: 0.85rem;
+      color: #666;
+      cursor: pointer;
+    }
+
+    /* Error Message */
+    .error-msg {
+      font-size: 0.8rem;
+      color: #e53935;
+      margin-top: 6px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+    }
+    .submit-btn:hover {
+      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+      transform: translateY(-1px);
+    }
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+    .submit-btn:disabled {
+      background: #ccc;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .page-wrapper { padding: 16px; }
+      .form-body { padding: 24px 20px 28px; }
+      .form-header { padding: 16px 20px; }
+      .page-logo .logo-text { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+  <!-- Logo -->
+  <div class="page-logo">
+    <div class="logo-text">天天<span>生鲜</span></div>
+    <div class="logo-sub">填写收货信息 新鲜送到家</div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <div class="form-header">
+      <span class="icon">&#128205;</span>
+      <h2>新建收货地址</h2>
+      <button class="back-btn" onclick="goBack()">&#8592; 返回</button>
+    </div>
+
+    <div class="form-body">
+      <form id="addressForm" onsubmit="return handleSubmit(event)">
+        <!-- 收件人 -->
+        <div class="form-group">
+          <label>收件人 <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <input type="text" id="receiverName" placeholder="请输入收件人姓名" maxlength="20" required>
+            <span class="icon">&#128100;</span>
+          </div>
+          <div class="char-count"><span id="nameCount">0</span>/20</div>
+          <div class="error-msg" id="nameError"></div>
+        </div>
+
+        <!-- 联系电话 -->
+        <div class="form-group">
+          <label>联系电话 <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <input type="tel" id="receiverMobile" placeholder="请输入11位手机号码" maxlength="11" required>
+            <span class="icon">&#128222;</span>
+          </div>
+          <div class="error-msg" id="mobileError"></div>
+        </div>
+
+        <!-- 详细地址 -->
+        <div class="form-group">
+          <label>详细地址 <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <textarea id="addressDetail" placeholder="请输入省/市/区/街道/门牌号等详细地址" maxlength="100" required></textarea>
+            <span class="icon" style="top:18px;transform:none;">&#127968;</span>
+          </div>
+          <div class="char-count"><span id="addrCount">0</span>/100</div>
+          <div class="error-msg" id="addrError"></div>
+        </div>
+
+        <!-- 设为默认 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="isDefault">
+          <label for="isDefault">设为默认收货地址</label>
+        </div>
+
+        <!-- 提交按钮 -->
+        <button type="submit" class="submit-btn" id="submitBtn">保存地址</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // CSRF Token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Character Count
+  document.getElementById('receiverName').addEventListener('input', function() {
+    const count = this.value.length;
+    const el = document.getElementById('nameCount');
+    el.textContent = count;
+    el.parentElement.className = 'char-count' + (count > 18 ? ' warn' : '') + (count >= 20 ? ' over' : '');
+  });
+
+  document.getElementById('addressDetail').addEventListener('input', function() {
+    const count = this.value.length;
+    const el = document.getElementById('addrCount');
+    el.textContent = count;
+    el.parentElement.className = 'char-count' + (count > 85 ? ' warn' : '') + (count >= 100 ? ' over' : '');
+  });
+
+  // Phone number validation - only allow digits
+  document.getElementById('receiverMobile').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '');
+  });
+
+  // Show field error
+  function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  // Clear field errors
+  function clearErrors() {
+    document.querySelectorAll('.error-msg').forEach(el => {
+      el.classList.remove('show');
+      el.textContent = '';
+    });
+  }
+
+  // 获取URL参数
+  function getUrlParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+
+  // 来源页面，默认为home
+  const source = getUrlParam('source') || 'home';
+
+  // Go back
+  function goBack() {
+    if (source === 'center') {
+      window.location.href = '/user/center/';
+    } else {
+      window.location.href = '/home/';
+    }
+  }
+
+  // Submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    clearErrors();
+
+    const name = document.getElementById('receiverName').value.trim();
+    const mobile = document.getElementById('receiverMobile').value.trim();
+    const address = document.getElementById('addressDetail').value.trim();
+    const isDefault = document.getElementById('isDefault').checked;
+    let valid = true;
+
+    // Validate name
+    if (!name) {
+      showError('nameError', '请输入收件人姓名');
+      valid = false;
+    } else if (name.length < 2) {
+      showError('nameError', '姓名至少2个字符');
+      valid = false;
+    }
+
+    // Validate mobile
+    if (!mobile) {
+      showError('mobileError', '请输入联系电话');
+      valid = false;
+    } else if (!/^1\d{10}$/.test(mobile)) {
+      showError('mobileError', '请输入正确的11位手机号码');
+      valid = false;
+    }
+
+    // Validate address
+    if (!address) {
+      showError('addrError', '请输入详细地址');
+      valid = false;
+    } else if (address.length < 5) {
+      showError('addrError', '地址信息过短，请填写完整地址');
+      valid = false;
+    }
+
+    if (!valid) return false;
+
+    // Disable button
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '保存中...';
+
+    // Submit to backend
+    fetch('/user/address/add/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        receiver_name: name,
+        receiver_mobile: mobile,
+        address: address,
+        is_default: isDefault
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.code === 200) {
+        showToast('地址添加成功');
+        setTimeout(() => {
+          // 根据来源返回不同页面
+          if (source === 'center') {
+            window.location.href = '/user/center/';
+          } else {
+            window.location.href = '/home/';
+          }
+        }, 1200);
+      } else {
+        showToast(data.msg || '添加失败，请重试');
+        btn.disabled = false;
+        btn.textContent = '保存地址';
+      }
+    })
+    .catch(error => {
+      showToast('网络错误，请重试');
+      btn.disabled = false;
+      btn.textContent = '保存地址';
+    });
+
+    return false;
+  }
+
+  // Toast
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+      document.getElementById('addressForm').dispatchEvent(new Event('submit'));
+    }
+  });
+</script>
+
+</body>
+</html>

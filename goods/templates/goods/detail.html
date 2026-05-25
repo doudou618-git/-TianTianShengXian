@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ goods.name }} - 天天生鲜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.5;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; }
+
+    /* Header */
+    .header {
+      background: #fff;
+      box-shadow: 0 1px 0 #e5e5e7;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1a5c2e;
+      white-space: nowrap;
+    }
+    .logo span { color: #c8963e; }
+    .back-btn {
+      padding: 8px 16px;
+      background: #f5f5f7;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .back-btn:hover { background: #e5e5e7; }
+
+    /* Product Section */
+    .product-section {
+      max-width: 1200px;
+      margin: 24px auto;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .product-image {
+      width: 500px;
+      height: 500px;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .product-image .placeholder {
+      font-size: 8rem;
+      color: #ccc;
+    }
+    .product-info {
+      flex: 1;
+      padding: 40px;
+    }
+    .product-name {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .product-desc {
+      color: #6e6e73;
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+    .product-price-box {
+      background: linear-gradient(135deg, #fff5f5, #fff);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .product-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #d32f2f;
+    }
+    .product-price small {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .product-unit {
+      color: #6e6e73;
+      font-size: 0.9rem;
+      margin-left: 8px;
+    }
+    .product-meta {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 24px;
+      color: #6e6e73;
+      font-size: 0.9rem;
+    }
+    .product-meta span { display: flex; align-items: center; gap: 4px; }
+    .product-meta .value { color: #1d1d1f; font-weight: 600; }
+
+    /* Specs */
+    .specs-section { margin-bottom: 24px; }
+    .specs-label { font-weight: 600; margin-bottom: 12px; }
+    .specs-list { display: flex; gap: 12px; flex-wrap: wrap; }
+    .spec-btn {
+      padding: 10px 20px;
+      border: 2px solid #e5e5e7;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .spec-btn:hover { border-color: #1a5c2e; }
+    .spec-btn.active {
+      border-color: #1a5c2e;
+      background: #e8f5e9;
+      color: #1a5c2e;
+    }
+
+    /* Quantity */
+    .quantity-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .qty-control {
+      display: flex;
+      align-items: center;
+      border: 2px solid #e5e5e7;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .qty-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: #f5f5f7;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-btn:hover { background: #e5e5e7; }
+    .qty-value {
+      width: 60px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 16px;
+    }
+    .btn-add-cart {
+      padding: 16px 48px;
+      background: linear-gradient(135deg, #1a5c2e, #2e7d32);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-add-cart:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(26,92,46,0.3);
+    }
+    .btn-buy-now {
+      padding: 16px 48px;
+      background: linear-gradient(135deg, #c8963e, #d4a853);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-buy-now:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(200,150,62,0.3);
+    }
+    .btn-favorite {
+      width: 56px;
+      height: 56px;
+      border: 2px solid #e5e5e7;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: all 0.2s;
+    }
+    .btn-favorite:hover {
+      border-color: #e91e63;
+      background: #fce4ec;
+    }
+    .btn-favorite.active {
+      border-color: #e91e63;
+      background: #e91e63;
+      color: #fff;
+    }
+
+    /* Comments Section */
+    .comments-section {
+      max-width: 1200px;
+      margin: 24px auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .comments-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e5e7;
+    }
+    .comments-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .comments-stats {
+      color: #6e6e73;
+      font-size: 0.9rem;
+    }
+    .comments-stats .rating { color: #c8963e; font-weight: 700; }
+
+    /* Add Comment Form */
+    .comment-form {
+      background: #f9f9f9;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .comment-form-title {
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .rating-select {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .star {
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #ddd;
+      transition: color 0.2s;
+    }
+    .star.active { color: #c8963e; }
+    .comment-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border: 2px solid #e5e5e7;
+      border-radius: 8px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    .comment-textarea:focus { outline: none; border-color: #1a5c2e; }
+    .comment-images-upload {
+      margin-bottom: 16px;
+    }
+    .upload-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: #fff;
+      border: 2px dashed #e5e5e7;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .upload-label:hover { border-color: #1a5c2e; }
+    .upload-label input { display: none; }
+    .preview-images {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .preview-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .preview-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .preview-img .remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+    }
+    .btn-submit-comment {
+      padding: 12px 32px;
+      background: #1a5c2e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-submit-comment:hover { background: #2e7d32; }
+    .btn-submit-comment:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* Comment List */
+    .comment-list { display: flex; flex-direction: column; gap: 24px; }
+    .comment-item {
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+    }
+    .comment-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .comment-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .comment-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a5c2e, #2e7d32);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .comment-username { font-weight: 600; }
+    .comment-rating { color: #c8963e; }
+    .comment-time { color: #86868b; font-size: 0.85rem; }
+    .comment-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn-delete-comment {
+      color: #86868b;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .btn-delete-comment:hover {
+      color: #d32f2f;
+      background: #ffebee;
+    }
+    .comment-content { margin-bottom: 12px; line-height: 1.8; }
+    .comment-images {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .comment-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .comment-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+    .comment-img:hover img { transform: scale(1.05); }
+
+    /* Empty Comments */
+    .comments-empty {
+      text-align: center;
+      padding: 48px;
+      color: #86868b;
+    }
+    .comments-empty .icon { font-size: 3rem; margin-bottom: 16px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Image Preview Modal */
+    .img-preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      cursor: pointer;
+    }
+    .img-preview-modal.open { display: flex; }
+    .img-preview-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px;
+      color: #86868b;
+      font-size: 0.85rem;
+    }
+
+    /* Address Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open { display: flex; opacity: 1; }
+    .address-modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 500px;
+      max-width: 92vw;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    }
+    .address-modal .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e5e7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .address-modal .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .address-modal .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: #86868b;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .address-modal .modal-close:hover { color: #1d1d1f; }
+    .address-list { padding: 16px 24px; max-height: 400px; overflow-y: auto; }
+    .address-item {
+      padding: 14px;
+      border: 2px solid #e5e5e7;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .address-item:hover { border-color: #1a5c2e; }
+    .address-item.selected { border-color: #1a5c2e; background: #e8f5e9; }
+    .address-item .name { font-weight: 600; font-size: 0.9rem; }
+    .address-item .phone { color: #86868b; font-size: 0.8rem; margin-left: 12px; }
+    .address-item .addr { font-size: 0.8rem; color: #6e6e73; margin-top: 4px; }
+    .address-item .tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: #e8f5e9;
+      color: #1a5c2e;
+      margin-top: 6px;
+    }
+    .address-modal .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e5e5e7;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-secondary {
+      padding: 10px 24px;
+      border: 1px solid #e5e5e7;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #6e6e73;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: #86868b; }
+    .btn-primary {
+      padding: 10px 24px;
+      border: none;
+      background: #1a5c2e;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { background: #2e7d32; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">天天<span>生鲜</span></div>
+    <button class="back-btn" onclick="goBack()">返回首页</button>
+    <div style="flex:1"></div>
+    <div id="authButtons">
+      {% if user.is_authenticated %}
+      <button class="back-btn" onclick="window.location.href='/user/center/'">{{ user.username }}</button>
+      {% else %}
+      <button class="back-btn" onclick="window.location.href='/user/login/'">登录</button>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Product Section -->
+<div class="product-section">
+  <div class="product-image" id="productImage">
+    {% if goods.image %}
+    <img src="{{ goods.image.url }}" alt="{{ goods.name }}">
+    {% else %}
+    <div class="placeholder">&#128230;</div>
+    {% endif %}
+  </div>
+  <div class="product-info">
+    <h1 class="product-name">{{ goods.name }}</h1>
+    <p class="product-desc">{{ goods.desc }}</p>
+
+    <div class="product-price-box">
+      <span class="product-price"><small>&#165;</small>{{ goods.price }}</span>
+      <span class="product-unit">/{{ goods.unit }}</span>
+    </div>
+
+    <div class="product-meta">
+      <span>分类：<span class="value">{{ goods.category.name }}</span></span>
+      <span>销量：<span class="value">{{ goods.sales }}</span></span>
+      <span>库存：<span class="value">{{ goods.stock }}{{ goods.unit }}</span></span>
+    </div>
+
+    <div class="specs-section">
+      <div class="specs-label">规格</div>
+      <div class="specs-list" id="specsList">
+        {% for spec in goods.specs.all %}
+        <button class="spec-btn {% if forloop.first %}active{% endif %}" data-id="{{ spec.id }}" data-price="{{ spec.price }}">{{ spec.name }}</button>
+        {% empty %}
+        <button class="spec-btn active">默认</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="quantity-section">
+      <span style="font-weight:600;">数量</span>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(-1)">&#65293;</button>
+        <div class="qty-value" id="qtyValue">1</div>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+      <span style="color:#86868b;font-size:0.85rem;">库存 {{ goods.stock }}{{ goods.unit }}</span>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-add-cart" onclick="addToCart()">加入购物车</button>
+      <button class="btn-buy-now" onclick="buyNow()">立即购买</button>
+      <button class="btn-favorite {% if is_favorited %}active{% endif %}" id="btnFavorite" onclick="toggleFavorite()">{% if is_favorited %}&#9829;{% else %}&#9825;{% endif %}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comments Section -->
+<div class="comments-section">
+  <div class="comments-header">
+    <h2 class="comments-title">商品评价</h2>
+    <div class="comments-stats">
+      好评率：<span class="rating" id="avgRating">5.0</span> | 共 <span id="commentCount">0</span> 条评价
+    </div>
+  </div>
+
+  <!-- Add Comment Form -->
+  {% if user.is_authenticated %}
+  <div class="comment-form" id="commentForm">
+    <div class="comment-form-title">发表评价</div>
+    <div class="rating-select" id="ratingSelect">
+      <span class="star active" data-rating="1">&#9733;</span>
+      <span class="star active" data-rating="2">&#9733;</span>
+      <span class="star active" data-rating="3">&#9733;</span>
+      <span class="star active" data-rating="4">&#9733;</span>
+      <span class="star active" data-rating="5">&#9733;</span>
+      <span id="ratingText" style="margin-left:8px;color:#c8963e;">非常满意</span>
+    </div>
+    <textarea class="comment-textarea" id="commentContent" placeholder="分享您的使用体验..."></textarea>
+    <div class="comment-images-upload">
+      <label class="upload-label">
+        <span>&#128247;</span> 添加图片
+        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageUpload(this)">
+      </label>
+      <div class="preview-images" id="previewImages"></div>
+    </div>
+    <button class="btn-submit-comment" onclick="submitComment()">提交评价</button>
+  </div>
+  {% else %}
+  <div class="comment-form" style="text-align:center;">
+    <p>请 <a href="/user/login/" style="color:#1a5c2e;font-weight:600;">登录</a> 后发表评价</p>
+  </div>
+  {% endif %}
+
+  <!-- Comment List -->
+  <div class="comment-list" id="commentList">
+    <div class="comments-empty">
+      <div class="icon">&#128172;</div>
+      <p>暂无评价，快来发表第一条评价吧！</p>
+    </div>
+  </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="img-preview-modal" id="imgPreviewModal" onclick="this.classList.remove('open')">
+  <img src="" alt="preview" id="previewImg">
+</div>
+
+<!-- Address Modal -->
+<div class="modal-overlay" id="addressModal">
+  <div class="address-modal">
+    <div class="modal-header">
+      <h3>&#128205; 选择收货地址</h3>
+      <button class="modal-close" onclick="closeAddressModal()">&#10005;</button>
+    </div>
+    <div class="address-list" id="addressList"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeAddressModal()">取消</button>
+      <button class="btn-secondary" onclick="addNewAddress()">+ 新建地址</button>
+      <button class="btn-primary" onclick="confirmBuyNow()">确定购买</button>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>&copy; 2026 天天生鲜 - 优质生鲜电商平台</p>
+</div>
+
+<script>
+const goodsId = {{ goods.id }};
+const isLoggedIn = {% if user.is_authenticated %}true{% else %}false{% endif %};
+let currentRating = 5;
+let uploadedImages = [];
+let pendingImages = [];
+
+// 返回上一页
+function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = '/home/';
+  }
+}
+
+// Rating
+document.querySelectorAll('#ratingSelect .star').forEach(star => {
+  star.addEventListener('click', () => {
+    currentRating = parseInt(star.dataset.rating);
+    updateRatingUI();
+  });
+});
+
+function updateRatingUI() {
+  document.querySelectorAll('#ratingSelect .star').forEach(star => {
+    star.classList.toggle('active', parseInt(star.dataset.rating) <= currentRating);
+  });
+  const texts = ['非常差', '较差', '一般', '满意', '非常满意'];
+  document.getElementById('ratingText').textContent = texts[currentRating - 1];
+}
+
+// Quantity
+let qty = 1;
+function changeQty(delta) {
+  qty = Math.max(1, qty + delta);
+  document.getElementById('qtyValue').textContent = qty;
+}
+
+// Image Upload
+function handleImageUpload(input) {
+  const files = Array.from(input.files);
+  if (uploadedImages.length + files.length > 9) {
+    showToast('最多上传9张图片');
+    return;
+  }
+
+  files.forEach(file => {
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('图片大小不能超过5MB');
+      return;
+    }
+    pendingImages.push(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const idx = pendingImages.length - 1;
+      const div = document.createElement('div');
+      div.className = 'preview-img';
+      div.dataset.idx = idx;
+      div.innerHTML = `
+        <img src="${e.target.result}" alt="preview">
+        <button class="remove" onclick="removePreview(this, ${idx})">&times;</button>
+      `;
+      document.getElementById('previewImages').appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function removePreview(btn, idx) {
+  btn.parentElement.remove();
+  pendingImages[idx] = null;
+}
+
+// Submit Comment
+async function submitComment() {
+  const content = document.getElementById('commentContent').value.trim();
+  if (!content) {
+    showToast('请输入评论内容');
+    return;
+  }
+
+  const btn = document.querySelector('.btn-submit-comment');
+  btn.disabled = true;
+  btn.textContent = '提交中...';
+
+  try {
+    // 先提交评论
+    const response = await fetch(`/goods/${goodsId}/comment/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ content, rating: currentRating }),
+    });
+
+    const data = await response.json();
+    if (data.code !== 200) {
+      showToast(data.msg);
+      return;
+    }
+
+    // 上传图片
+    const commentId = data.data.id;
+    const validImages = pendingImages.filter(f => f !== null);
+    for (const file of validImages) {
+      const formData = new FormData();
+      formData.append('image', file);
+      await fetch(`/goods/comment/${commentId}/image/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        body: formData,
+      });
+    }
+
+    showToast('评论成功');
+    document.getElementById('commentContent').value = '';
+    document.getElementById('previewImages').innerHTML = '';
+    pendingImages = [];
+    currentRating = 5;
+    updateRatingUI();
+
+    // 重新加载评论
+    loadComments();
+  } catch (error) {
+    showToast('评论失败，请重试');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '提交评价';
+  }
+}
+
+// Load Comments
+async function loadComments() {
+  try {
+    const response = await fetch(`/goods/${goodsId}/api/`);
+    const data = await response.json();
+
+    if (data.code === 200) {
+      const { comments, comment_count, avg_rating } = data.data;
+      document.getElementById('commentCount').textContent = comment_count;
+      document.getElementById('avgRating').textContent = avg_rating;
+
+      const list = document.getElementById('commentList');
+      if (comments.length === 0) {
+        list.innerHTML = `
+          <div class="comments-empty">
+            <div class="icon">&#128172;</div>
+            <p>暂无评价，快来发表第一条评价吧！</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = comments.map(c => `
+        <div class="comment-item" id="comment-${c.id}">
+          <div class="comment-header">
+            <div class="comment-user">
+              <div class="comment-avatar">
+                ${c.avatar_url ? `<img src="${c.avatar_url}" alt="${c.username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : c.username.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div class="comment-username">${c.username}</div>
+                <div class="comment-rating">${'&#9733;'.repeat(c.rating)}${'&#9734;'.repeat(5 - c.rating)}</div>
+              </div>
+            </div>
+            <div class="comment-actions">
+              ${c.is_owner ? `<button class="btn-delete-comment" onclick="deleteComment(${c.id})">删除</button>` : ''}
+              <div class="comment-time">${c.create_time}</div>
+            </div>
+          </div>
+          <div class="comment-content">${c.content}</div>
+          ${c.images.length > 0 ? `
+            <div class="comment-images">
+              ${c.images.map(img => `
+                <div class="comment-img" onclick="previewImage('${img.url}')">
+                  <img src="${img.url}" alt="评论图片">
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.log('加载评论失败:', error);
+  }
+}
+
+// Delete Comment
+async function deleteComment(commentId) {
+  if (!confirm('确定要删除这条评论吗？')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/goods/comment/${commentId}/delete/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    });
+
+    const data = await response.json();
+    if (data.code === 200) {
+      showToast('删除成功');
+      // 重新加载评论
+      loadComments();
+    } else {
+      showToast(data.msg || '删除失败');
+    }
+  } catch (error) {
+    showToast('删除失败，请重试');
+  }
+}
+
+// Preview Image
+function previewImage(url) {
+  document.getElementById('previewImg').src = url;
+  document.getElementById('imgPreviewModal').classList.add('open');
+}
+
+// Add to Cart
+async function addToCart() {
+  if (!isLoggedIn) {
+    showToast('请先登录');
+    return;
+  }
+  try {
+    const response = await fetch('/order/cart/add/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ goods_id: goodsId, quantity: qty }),
+    });
+    const data = await response.json();
+    if (data.code === 200) {
+      showToast('已加入购物车');
+    } else {
+      showToast(data.msg || '添加失败');
+    }
+  } catch (error) {
+    showToast('网络错误，请重试');
+  }
+}
+
+// Buy Now
+let userAddresses = [];
+let selectedAddressIdx = 0;
+
+async function buyNow() {
+  if (!isLoggedIn) {
+    showToast('请先登录');
+    return;
+  }
+  // 加载地址并打开弹窗
+  await loadUserAddresses();
+  if (userAddresses.length === 0) {
+    if (confirm('您还没有收货地址，是否去添加？')) {
+      window.location.href = '/user/address/new/?source=detail&goods_id=' + goodsId;
+    }
+    return;
+  }
+  selectedAddressIdx = 0;
+  renderAddressList();
+  openAddressModal();
+}
+
+async function loadUserAddresses() {
+  try {
+    const response = await fetch('/user/address/', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    });
+    if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
+      userAddresses = [];
+      return;
+    }
+    const data = await response.json();
+    if (data.code === 200 && data.data) {
+      userAddresses = data.data;
+    } else {
+      userAddresses = [];
+    }
+  } catch (error) {
+    userAddresses = [];
+  }
+}
+
+function renderAddressList() {
+  const list = document.getElementById('addressList');
+  if (userAddresses.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">暂无收货地址</div>';
+    return;
+  }
+  list.innerHTML = userAddresses.map((a, i) => `
+    <div class="address-item ${i === selectedAddressIdx ? 'selected' : ''}" onclick="selectAddrItem(${i})">
+      <span class="name">${a.receiver_name}</span>
+      <span class="phone">${a.receiver_mobile}</span>
+      <div class="addr">${a.address}</div>
+      ${a.is_default ? '<span class="tag">[默认]</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function selectAddrItem(i) {
+  selectedAddressIdx = i;
+  renderAddressList();
+}
+
+function openAddressModal() {
+  const overlay = document.getElementById('addressModal');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function closeAddressModal() {
+  const overlay = document.getElementById('addressModal');
+  overlay.classList.remove('open');
+  setTimeout(() => overlay.style.display = 'none', 250);
+}
+
+function addNewAddress() {
+  window.location.href = '/user/address/new/?source=detail&goods_id=' + goodsId;
+}
+
+async function confirmBuyNow() {
+  if (userAddresses.length === 0) {
+    showToast('请先添加收货地址');
+    return;
+  }
+
+  const addr = userAddresses[selectedAddressIdx];
+  closeAddressModal();
+
+  // 先添加到购物车
+  try {
+    const addRes = await fetch('/order/cart/add/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ goods_id: goodsId, quantity: qty }),
+    });
+    const addData = await addRes.json();
+    if (addData.code !== 200) {
+      showToast(addData.msg || '添加失败');
+      return;
+    }
+
+    // 创建订单
+    const orderRes = await fetch('/order/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({
+        goods_ids: [goodsId],
+        receiver_name: addr.receiver_name,
+        receiver_mobile: addr.receiver_mobile,
+        receiver_address: addr.address,
+      }),
+    });
+
+    const orderData = await orderRes.json();
+    if (orderData.code === 200) {
+      window.location.href = '/order/' + orderData.data.order_id + '/pay/';
+    } else {
+      showToast(orderData.msg || '创建订单失败');
+    }
+  } catch (error) {
+    showToast('网络错误，请重试');
+  }
+}
+
+// Toast
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// CSRF Token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Init
+loadComments();
+
+// ==================== 收藏功能 ====================
+let isFavorited = {% if is_favorited %}true{% else %}false{% endif %};
+
+// 检查收藏状态
+async function checkFavorite() {
+  if (!isLoggedIn) return;
+  try {
+    const response = await fetch(`/user/favorite/${goodsId}/check/`, {
+      headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    });
+    const data = await response.json();
+    if (data.code === 200) {
+      isFavorited = data.data.is_favorited;
+      updateFavoriteUI();
+    }
+  } catch (error) {
+    console.log('检查收藏状态失败:', error);
+  }
+}
+
+// 切换收藏状态
+async function toggleFavorite() {
+  if (!isLoggedIn) {
+    showToast('请先登录');
+    return;
+  }
+  try {
+    const response = await fetch(`/user/favorite/${goodsId}/toggle/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    });
+    const data = await response.json();
+    if (data.code === 200) {
+      isFavorited = data.data.is_favorited;
+      updateFavoriteUI();
+      showToast(data.msg);
+    } else {
+      showToast(data.msg || '操作失败');
+    }
+  } catch (error) {
+    showToast('操作失败，请重试');
+  }
+}
+
+// 更新收藏按钮UI
+function updateFavoriteUI() {
+  const btn = document.getElementById('btnFavorite');
+  if (isFavorited) {
+    btn.innerHTML = '&#9829;';
+    btn.classList.add('active');
+  } else {
+    btn.innerHTML = '&#9825;';
+    btn.classList.remove('active');
+  }
+}
+
+// 页面加载时检查收藏状态
+checkFavorite();
+</script>
+
+</body>
+</html>

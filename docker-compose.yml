@@ -1,0 +1,60 @@
+services:
+  web:
+    build: .
+    container_name: tiantian-web
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=your-production-secret-key-change-me
+      - DEBUG=False
+      - ALLOWED_HOSTS=*
+      - DB_NAME=tiantian
+      - DB_USER=root
+      - DB_PASSWORD=tiantian123
+      - DB_HOST=db
+      - DB_PORT=3306
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - media_data:/app/media
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py init_data &&
+        gunicorn TianTianShengXian.wsgi:application --bind 0.0.0.0:8000 --workers 3
+      "
+
+  db:
+    image: mysql:8.0
+    container_name: tiantian-db
+    environment:
+      MYSQL_ROOT_PASSWORD: tiantian123
+      MYSQL_DATABASE: tiantian
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: tiantian-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_data:
+  redis_data:
+  media_data:

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户注册 - 天天生鲜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    .register-wrapper {
+      width: 420px;
+      max-width: 92vw;
+    }
+
+    .register-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .register-logo .logo-text {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #2e7d32;
+    }
+    .register-logo .logo-text span {
+      color: #ff6f00;
+    }
+    .register-logo .logo-sub {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .register-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(46, 125, 50, 0.12);
+      overflow: hidden;
+    }
+
+    .card-title {
+      padding: 20px 0;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2e7d32;
+      border-bottom: 2px solid #f0f0f0;
+      background: #fff;
+    }
+
+    .form-content {
+      padding: 28px 32px 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      color: #bbb;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+    .input-wrapper input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+    .input-wrapper input:focus {
+      border-color: #2e7d32;
+      background: #fff;
+    }
+    .input-wrapper input:focus ~ .icon {
+      color: #2e7d32;
+    }
+    .input-wrapper .toggle-pwd {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: #bbb;
+      padding: 4px;
+    }
+    .input-wrapper .toggle-pwd:hover {
+      color: #666;
+    }
+
+    .sms-row {
+      display: flex;
+      gap: 12px;
+    }
+    .sms-row .input-wrapper {
+      flex: 1;
+    }
+    .sms-btn {
+      white-space: nowrap;
+      padding: 0 16px;
+      border: 2px solid #2e7d32;
+      border-radius: 10px;
+      background: #fff;
+      color: #2e7d32;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .sms-btn:hover {
+      background: #2e7d32;
+      color: #fff;
+    }
+    .sms-btn:disabled {
+      border-color: #ddd;
+      color: #ccc;
+      cursor: default;
+      background: #fafafa;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+    }
+    .submit-btn:hover {
+      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+      transform: translateY(-1px);
+    }
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .login-link a {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    .agreement {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: #999;
+      line-height: 1.6;
+    }
+    .agreement a {
+      color: #2e7d32;
+    }
+
+    .error-msg {
+      font-size: 0.8rem;
+      color: #e53935;
+      margin-top: 6px;
+      display: none;
+    }
+    .error-msg.show {
+      display: block;
+    }
+
+    .pwd-strength {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .pwd-strength .bar {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: #e8e8e8;
+      transition: background 0.3s;
+    }
+    .pwd-strength .bar.weak { background: #e53935; }
+    .pwd-strength .bar.medium { background: #ff9800; }
+    .pwd-strength .bar.strong { background: #2e7d32; }
+    .pwd-strength-text {
+      font-size: 0.75rem;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+
+    @media (max-width: 480px) {
+      .register-wrapper { padding: 16px; }
+      .form-content { padding: 24px 20px 28px; }
+      .register-logo .logo-text { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="register-wrapper">
+  <div class="register-logo">
+    <div class="logo-text">天天<span>生鲜</span></div>
+    <div class="logo-sub">新鲜好物 每日直达</div>
+  </div>
+
+  <div class="register-card">
+    <div class="card-title">用户注册</div>
+    <div class="form-content">
+      <form id="registerForm" onsubmit="return handleRegister(event)">
+        <div class="form-group">
+          <label>用户名</label>
+          <div class="input-wrapper">
+            <input type="text" id="regUsername" placeholder="4-20个字符，字母/数字/中文" required>
+            <span class="icon">&#128100;</span>
+          </div>
+          <div class="error-msg" id="regUsernameError"></div>
+        </div>
+
+        <div class="form-group">
+          <label>手机号</label>
+          <div class="input-wrapper">
+            <input type="tel" id="regPhone" placeholder="请输入11位手机号码" maxlength="11" required>
+            <span class="icon">&#128241;</span>
+          </div>
+          <div class="error-msg" id="regPhoneError"></div>
+        </div>
+
+        <div class="form-group">
+          <label>短信验证码</label>
+          <div class="sms-row">
+            <div class="input-wrapper">
+              <input type="text" id="regSmsCode" placeholder="请输入6位验证码" maxlength="6" required>
+              <span class="icon">&#128231;</span>
+            </div>
+            <button type="button" class="sms-btn" id="smsBtn" onclick="sendSmsCode()">获取验证码</button>
+          </div>
+          <div class="error-msg" id="regSmsCodeError"></div>
+        </div>
+
+        <div class="form-group">
+          <label>邮箱</label>
+          <div class="input-wrapper">
+            <input type="email" id="regEmail" placeholder="用于接收订单通知和找回密码">
+            <span class="icon">&#9993;</span>
+          </div>
+          <div class="error-msg" id="regEmailError"></div>
+        </div>
+
+        <div class="form-group">
+          <label>密码</label>
+          <div class="input-wrapper">
+            <input type="password" id="regPassword" placeholder="6-20位，建议包含字母和数字" required oninput="checkPasswordStrength(this.value)">
+            <span class="icon">&#128274;</span>
+            <button type="button" class="toggle-pwd" onclick="togglePassword('regPassword', this)">&#128065;</button>
+          </div>
+          <div class="pwd-strength">
+            <div class="bar" id="pwdBar1"></div>
+            <div class="bar" id="pwdBar2"></div>
+            <div class="bar" id="pwdBar3"></div>
+          </div>
+          <div class="pwd-strength-text" id="pwdStrengthText"></div>
+          <div class="error-msg" id="regPasswordError"></div>
+        </div>
+
+        <div class="form-group">
+          <label>确认密码</label>
+          <div class="input-wrapper">
+            <input type="password" id="regPasswordConfirm" placeholder="请再次输入密码" required>
+            <span class="icon">&#128274;</span>
+          </div>
+          <div class="error-msg" id="regPasswordConfirmError"></div>
+        </div>
+
+        <button type="submit" class="submit-btn">注 册</button>
+      </form>
+
+      <div class="login-link">
+        已有账号？<a href="/user/login/">立即登录</a>
+      </div>
+
+      <div class="agreement">
+        注册即表示同意
+        <a href="javascript:void(0)">《用户服务协议》</a> 和
+        <a href="javascript:void(0)">《隐私政策》</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '&#128064;';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '&#128065;';
+  }
+}
+
+function checkPasswordStrength(pwd) {
+  const bar1 = document.getElementById('pwdBar1');
+  const bar2 = document.getElementById('pwdBar2');
+  const bar3 = document.getElementById('pwdBar3');
+  const text = document.getElementById('pwdStrengthText');
+
+  bar1.className = 'bar';
+  bar2.className = 'bar';
+  bar3.className = 'bar';
+  text.textContent = '';
+
+  if (!pwd) return;
+
+  let score = 0;
+  if (pwd.length >= 6) score++;
+  if (pwd.length >= 10) score++;
+  if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+  if (/\d/.test(pwd)) score++;
+  if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+
+  if (score <= 1) {
+    bar1.classList.add('weak');
+    text.textContent = '弱 — 建议增加字符类型';
+    text.style.color = '#e53935';
+  } else if (score <= 3) {
+    bar1.classList.add('medium');
+    bar2.classList.add('medium');
+    text.textContent = '中 — 继续加强';
+    text.style.color = '#ff9800';
+  } else {
+    bar1.classList.add('strong');
+    bar2.classList.add('strong');
+    bar3.classList.add('strong');
+    text.textContent = '强 — 密码安全';
+    text.style.color = '#2e7d32';
+  }
+}
+
+function showFieldError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearFieldErrors(prefix) {
+  document.querySelectorAll('[id^="' + prefix + '"]').forEach(el => {
+    if (el.classList.contains('error-msg')) {
+      el.classList.remove('show');
+      el.textContent = '';
+    }
+  });
+}
+
+function sendSmsCode() {
+  const phone = document.getElementById('regPhone').value.trim();
+  if (!/^1\d{10}$/.test(phone)) {
+    showToast('请先输入正确的11位手机号码');
+    return;
+  }
+
+  const btn = document.getElementById('smsBtn');
+  btn.disabled = true;
+
+  fetch('/user/send-sms-code/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({ phone })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('验证码已发送到您的手机');
+      let seconds = 60;
+      btn.textContent = seconds + 's';
+      const timer = setInterval(() => {
+        seconds--;
+        btn.textContent = seconds + 's';
+        if (seconds <= 0) {
+          clearInterval(timer);
+          btn.textContent = '获取验证码';
+          btn.disabled = false;
+        }
+      }, 1000);
+    } else {
+      showToast(data.msg);
+      btn.disabled = false;
+    }
+  })
+  .catch(error => {
+    showToast('发送失败，请重试');
+    btn.disabled = false;
+  });
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  clearFieldErrors('reg');
+
+  const username = document.getElementById('regUsername').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const smsCode = document.getElementById('regSmsCode').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+  let valid = true;
+
+  if (!username || username.length < 2) {
+    showFieldError('regUsernameError', '用户名至少 2 个字符');
+    valid = false;
+  }
+  if (!/^1\d{10}$/.test(phone)) {
+    showFieldError('regPhoneError', '请输入正确的11位手机号码');
+    valid = false;
+  }
+  if (!smsCode || smsCode.length !== 6) {
+    showFieldError('regSmsCodeError', '请输入6位短信验证码');
+    valid = false;
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showFieldError('regEmailError', '请输入有效的邮箱地址');
+    valid = false;
+  }
+  if (valid) {
+    fetch('/user/register/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        username,
+        phone,
+        sms_code: smsCode,
+        email,
+        password,
+        password_confirm: passwordConfirm
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.code === 200) {
+        showToast('注册成功，请登录');
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 1200);
+      } else {
+        showToast(data.msg);
+      }
+    })
+    .catch(error => {
+      showToast('注册失败，请重试');
+    });
+  }
+  return false;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const form = document.getElementById('registerForm');
+    if (form) form.dispatchEvent(new Event('submit'));
+  }
+});
+</script>
+
+</body>
+</html>

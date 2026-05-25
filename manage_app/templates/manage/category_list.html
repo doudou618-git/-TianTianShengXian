@@ -1,0 +1,50 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}分类管理{% endblock %}
+{% block menu_category %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">分类管理</h1>
+  <a href="/manage/categories/add/" class="btn btn-primary">+ 添加分类</a>
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding: 0;">
+    {% if categories %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>图标</th>
+          <th>分类名称</th>
+          <th>排序</th>
+          <th>商品数量</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td>{{ cat.id }}</td>
+          <td style="font-size:1.5rem;">{{ cat.icon }}</td>
+          <td>{{ cat.name }}</td>
+          <td>{{ cat.sort }}</td>
+          <td>{{ cat.goods_set.count }}</td>
+          <td>
+            <a href="/manage/categories/{{ cat.id }}/edit/" class="btn btn-default btn-sm">编辑</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">&#128193;</div>
+      <p>暂无分类</p>
+      <a href="/manage/categories/add/" class="btn btn-primary" style="margin-top:16px;">添加第一个分类</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

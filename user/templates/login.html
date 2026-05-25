@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户登录 - 天天生鲜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    .login-wrapper {
+      width: 420px;
+      max-width: 92vw;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .login-logo .logo-text {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #2e7d32;
+    }
+    .login-logo .logo-text span {
+      color: #ff6f00;
+    }
+    .login-logo .logo-sub {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(46, 125, 50, 0.12);
+      overflow: hidden;
+    }
+
+    .card-title {
+      padding: 20px 0;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2e7d32;
+      border-bottom: 2px solid #f0f0f0;
+      background: #fff;
+    }
+
+    .form-content {
+      padding: 28px 32px 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      color: #bbb;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+    .input-wrapper input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+      background: #fafafa;
+    }
+    .input-wrapper input:focus {
+      border-color: #2e7d32;
+      background: #fff;
+    }
+    .input-wrapper input:focus ~ .icon {
+      color: #2e7d32;
+    }
+    .input-wrapper .toggle-pwd {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: #bbb;
+      padding: 4px;
+    }
+    .input-wrapper .toggle-pwd:hover {
+      color: #666;
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+    }
+    .form-options label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: #666;
+    }
+    .form-options label input[type="checkbox"] {
+      accent-color: #2e7d32;
+    }
+    .form-options a {
+      color: #2e7d32;
+    }
+    .form-options a:hover {
+      text-decoration: underline;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+    }
+    .submit-btn:hover {
+      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+      transform: translateY(-1px);
+    }
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .register-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .register-link a {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-msg {
+      font-size: 0.8rem;
+      color: #e53935;
+      margin-top: 6px;
+      display: none;
+    }
+    .error-msg.show {
+      display: block;
+    }
+
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+
+    @media (max-width: 480px) {
+      .login-wrapper { padding: 16px; }
+      .form-content { padding: 24px 20px 28px; }
+      .login-logo .logo-text { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="login-logo">
+    <div class="logo-text">天天<span>生鲜</span></div>
+    <div class="logo-sub">新鲜好物 每日直达</div>
+  </div>
+
+  <div class="login-card">
+    <div class="card-title">用户登录</div>
+    <div class="form-content">
+      <form id="loginForm" onsubmit="return handleLogin(event)">
+        <div class="form-group">
+          <label>用户名 / 邮箱</label>
+          <div class="input-wrapper">
+            <input type="text" id="loginUsername" placeholder="请输入用户名或邮箱" required>
+            <span class="icon">&#128100;</span>
+          </div>
+          <div class="error-msg" id="loginUsernameError"></div>
+        </div>
+
+        <div class="form-group">
+          <label>密码</label>
+          <div class="input-wrapper">
+            <input type="password" id="loginPassword" placeholder="请输入密码" required>
+            <span class="icon">&#128274;</span>
+            <button type="button" class="toggle-pwd" onclick="togglePassword('loginPassword', this)">&#128065;</button>
+          </div>
+          <div class="error-msg" id="loginPasswordError"></div>
+        </div>
+
+        <div class="form-options">
+          <label><input type="checkbox" id="rememberMe"> 记住我</label>
+          <a href="javascript:void(0)">忘记密码？</a>
+        </div>
+
+        <button type="submit" class="submit-btn">登 录</button>
+      </form>
+
+      <div class="register-link">
+        还没有账号？<a href="/user/register/">立即注册</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '&#128064;';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '&#128065;';
+  }
+}
+
+function showFieldError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearFieldErrors(prefix) {
+  document.querySelectorAll('[id^="' + prefix + '"]').forEach(el => {
+    if (el.classList.contains('error-msg')) {
+      el.classList.remove('show');
+      el.textContent = '';
+    }
+  });
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  clearFieldErrors('login');
+
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  let valid = true;
+
+  if (!username) {
+    showFieldError('loginUsernameError', '请输入用户名或邮箱');
+    valid = false;
+  }
+  if (!password) {
+    showFieldError('loginPasswordError', '请输入密码');
+    valid = false;
+  }
+  if (valid) {
+    fetch('/user/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ username, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.code === 200) {
+        showToast('登录成功，正在跳转...');
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 1000);
+      } else {
+        showToast(data.msg);
+      }
+    })
+    .catch(error => {
+      showToast('登录失败，请重试');
+    });
+  }
+  return false;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const form = document.getElementById('loginForm');
+    if (form) form.dispatchEvent(new Event('submit'));
+  }
+});
+</script>
+
+</body>
+</html>

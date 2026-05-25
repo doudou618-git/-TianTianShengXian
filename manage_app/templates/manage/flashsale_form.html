@@ -1,0 +1,145 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}{% if action == 'add' %}创建秒杀{% else %}编辑秒杀{% endif %}{% endblock %}
+{% block menu_flashsale %}active{% endblock %}
+
+{% block content %}
+<a href="/manage/flashsale/" class="back-link">← 返回秒杀列表</a>
+
+<div class="page-header">
+  <h1 class="page-title">{% if action == 'add' %}创建秒杀活动{% else %}编辑秒杀活动{% endif %}</h1>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form id="flashsaleForm" onsubmit="return handleSubmit(event)" style="max-width:600px;" enctype="multipart/form-data">
+      {% if action == 'add' %}
+      <div class="form-group">
+        <label class="form-label">选择商品 <span class="required">*</span></label>
+        <select class="form-select" name="goods_id" required>
+          <option value="">请选择秒杀商品</option>
+          {% for goods in goods_list %}
+          <option value="{{ goods.id }}" data-unit="{{ goods.unit }}">{{ goods.name }} - ¥{{ goods.price }}/{{ goods.unit }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% else %}
+      <div class="form-group">
+        <label class="form-label">秒杀商品</label>
+        <input type="text" class="form-input" value="{{ flashsale.goods.name }}" disabled>
+      </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label">秒杀图片</label>
+        {% if flashsale.image %}
+        <div style="margin-bottom:12px;">
+          <img src="{{ flashsale.image.url }}" alt="秒杀图片" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid #eee;">
+        </div>
+        {% endif %}
+        <input type="file" class="form-input" name="image" accept="image/*">
+        <div class="form-hint">上传秒杀活动图片，建议尺寸 400x400，不上传则使用商品图片</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">秒杀价格 <span class="required">*</span></label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" class="form-input" name="flash_price" value="{{ flashsale.flash_price|default:'' }}" step="0.01" min="0" required style="flex:1;">
+          <span id="unitHint" style="font-size:0.9rem;color:var(--text-secondary);white-space:nowrap;">{% if flashsale %}/ {{ flashsale.goods.unit }}{% endif %}</span>
+        </div>
+        <div class="form-hint">输入秒杀价格，单位为每{{ flashsale.goods.unit|default:'份' }}</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">秒杀库存 <span class="required">*</span></label>
+        <input type="number" class="form-input" name="stock" value="{{ flashsale.stock|default:'' }}" min="1" required>
+      </div>
+
+      <div class="inline-form">
+        <div class="form-group">
+          <label class="form-label">开始时间 <span class="required">*</span></label>
+          <input type="datetime-local" class="form-input" name="start_time"
+                 value="{{ flashsale.start_time|date:'Y-m-d\TH:i'|default:'' }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">结束时间 <span class="required">*</span></label>
+          <input type="datetime-local" class="form-input" name="end_time"
+                 value="{{ flashsale.end_time|date:'Y-m-d\TH:i'|default:'' }}" required>
+        </div>
+      </div>
+
+      {% if action == 'edit' %}
+      <div class="form-group">
+        <label class="form-label">活动状态</label>
+        <label class="checkbox-group">
+          <input type="checkbox" name="is_active" {% if flashsale.is_active %}checked{% endif %}>
+          <span>激活（活动有效）</span>
+        </label>
+      </div>
+      {% endif %}
+
+      <div style="margin-top:24px;">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          {% if action == 'add' %}创建秒杀{% else %}保存修改{% endif %}
+        </button>
+        <a href="/manage/flashsale/" class="btn btn-default" style="margin-left:12px;">取消</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 选择商品时更新单位提示
+const goodsSelect = document.querySelector('select[name="goods_id"]');
+if (goodsSelect) {
+  goodsSelect.addEventListener('change', function() {
+    const selected = this.options[this.selectedIndex];
+    const unit = selected.getAttribute('data-unit') || '';
+    document.getElementById('unitHint').textContent = unit ? '/ ' + unit : '';
+  });
+}
+
+function handleSubmit(e) {
+  e.preventDefault();
+
+  const form = document.getElementById('flashsaleForm');
+  const formData = new FormData(form);
+  const btn = document.getElementById('submitBtn');
+
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  const url = {% if action == 'add' %}'/manage/flashsale/add/'{% else %}'/manage/flashsale/{{ flashsale.id }}/edit/'{% endif %};
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast(data.msg);
+      setTimeout(() => {
+        window.location.href = data.url;
+      }, 800);
+    } else {
+      showToast(data.msg || '保存失败');
+      btn.disabled = false;
+      btn.textContent = '{% if action == "add" %}创建秒杀{% else %}保存修改{% endif %}';
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+    btn.disabled = false;
+    btn.textContent = '{% if action == "add" %}创建秒杀{% else %}保存修改{% endif %}';
+  });
+
+  return false;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}{% if action == 'add' %}创建套餐{% else %}编辑套餐{% endif %}{% endblock %}
+{% block menu_combo %}active{% endblock %}
+
+{% block content %}
+<a href="/manage/combo/" class="back-link">← 返回套餐列表</a>
+
+<div class="page-header">
+  <h1 class="page-title">{% if action == 'add' %}创建套餐{% else %}编辑套餐{% endif %}</h1>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form id="comboForm" onsubmit="return handleSubmit(event)" style="max-width:700px;" enctype="multipart/form-data">
+      <div class="form-group">
+        <label class="form-label">套餐名称 <span class="required">*</span></label>
+        <input type="text" class="form-input" name="name" value="{{ combo.name|default:'' }}" required placeholder="如：蔬菜大礼包">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">套餐描述</label>
+        <input type="text" class="form-input" name="desc" value="{{ combo.desc|default:'' }}" placeholder="如：新鲜蔬菜组合 一家三口一周用量">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">套餐图片</label>
+        {% if combo.image %}
+        <div style="margin-bottom:12px;">
+          <img src="{{ combo.image.url }}" alt="套餐图片" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid #eee;">
+        </div>
+        {% endif %}
+        <input type="file" class="form-input" name="image" accept="image/*">
+        <div class="form-hint">上传套餐图片，建议尺寸 400x400</div>
+      </div>
+
+      <div class="inline-form">
+        <div class="form-group">
+          <label class="form-label">套餐价格 <span class="required">*</span></label>
+          <input type="number" class="form-input" name="price" value="{{ combo.price|default:'' }}" step="0.01" min="0" required>
+          <div class="form-hint">套餐总价，应低于商品原价总和</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">排序</label>
+          <input type="number" class="form-input" name="sort" value="{{ combo.sort|default:'0' }}">
+          <div class="form-hint">数值越大越靠前</div>
+        </div>
+      </div>
+
+      {% if action == 'edit' %}
+      <div class="form-group">
+        <label class="form-label">活动状态</label>
+        <label class="checkbox-group">
+          <input type="checkbox" name="is_active" {% if combo.is_active %}checked{% endif %}>
+          <span>上架（用户可见）</span>
+        </label>
+      </div>
+      {% endif %}
+
+      <!-- 套餐商品 -->
+      <div class="form-group">
+        <label class="form-label">套餐商品 <span class="required">*</span></label>
+        <div id="comboItemsList">
+          {% if combo_items %}
+            {% for item in combo_items %}
+            <div class="combo-item-row" style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+              <select class="form-select" name="goods_ids[]" required style="flex:2;">
+                <option value="">请选择商品</option>
+                {% for g in goods_list %}
+                <option value="{{ g.id }}" {% if g.id == item.goods.id %}selected{% endif %}>{{ g.name }} - ¥{{ g.price }}/{{ g.unit }}</option>
+                {% endfor %}
+              </select>
+              <input type="number" class="form-input" name="quantities[]" value="{{ item.quantity }}" min="1" required style="flex:1;" placeholder="数量">
+              <button type="button" class="btn btn-danger btn-sm" onclick="removeComboItem(this)">删除</button>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+        <button type="button" class="btn btn-default" onclick="addComboItem()" style="margin-top:8px;">+ 添加商品</button>
+      </div>
+
+      <div style="margin-top:24px;">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          {% if action == 'add' %}创建套餐{% else %}保存修改{% endif %}
+        </button>
+        <a href="/manage/combo/" class="btn btn-default" style="margin-left:12px;">取消</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const goodsOptions = `{% for g in goods_list %}<option value="{{ g.id }}">{{ g.name }} - ¥{{ g.price }}/{{ g.unit }}</option>{% endfor %}`;
+
+function addComboItem() {
+  const container = document.getElementById('comboItemsList');
+  const row = document.createElement('div');
+  row.className = 'combo-item-row';
+  row.style.cssText = 'display:flex;gap:10px;align-items:center;margin-bottom:10px;';
+  row.innerHTML = `
+    <select class="form-select" name="goods_ids[]" required style="flex:2;">
+      <option value="">请选择商品</option>
+      ${goodsOptions}
+    </select>
+    <input type="number" class="form-input" name="quantities[]" value="1" min="1" required style="flex:1;" placeholder="数量">
+    <button type="button" class="btn btn-danger btn-sm" onclick="removeComboItem(this)">删除</button>
+  `;
+  container.appendChild(row);
+}
+
+function removeComboItem(btn) {
+  const rows = document.querySelectorAll('.combo-item-row');
+  if (rows.length <= 1) {
+    showToast('套餐至少需要一个商品');
+    return;
+  }
+  btn.closest('.combo-item-row').remove();
+}
+
+function handleSubmit(e) {
+  e.preventDefault();
+
+  const form = document.getElementById('comboForm');
+  const formData = new FormData(form);
+  const btn = document.getElementById('submitBtn');
+
+  // 验证至少有一个商品
+  const goodsIds = formData.getAll('goods_ids[]');
+  if (goodsIds.length === 0 || goodsIds.some(id => !id)) {
+    showToast('请至少添加一个套餐商品');
+    return false;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  const url = {% if action == 'add' %}'/manage/combo/add/'{% else %}'/manage/combo/{{ combo.id }}/edit/'{% endif %};
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast(data.msg);
+      setTimeout(() => {
+        window.location.href = data.url;
+      }, 800);
+    } else {
+      showToast(data.msg || '保存失败');
+      btn.disabled = false;
+      btn.textContent = '{% if action == "add" %}创建套餐{% else %}保存修改{% endif %}';
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+    btn.disabled = false;
+    btn.textContent = '{% if action == "add" %}创建套餐{% else %}保存修改{% endif %}';
+  });
+
+  return false;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,7 @@
+Django==4.2.20
+django-redis==5.4.0
+redis==5.2.0
+mysqlclient==2.2.8
+Pillow==12.1.1
+python-dotenv==1.1.0
+gunicorn==23.0.0

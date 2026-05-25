@@ -1,0 +1,118 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}商品管理{% endblock %}
+{% block menu_goods %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">商品管理</h1>
+  <a href="/manage/goods/add/" class="btn btn-primary">+ 添加商品</a>
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding: 0;">
+    {% if goods_list %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>商品图片</th>
+          <th>商品名称</th>
+          <th>分类</th>
+          <th>价格</th>
+          <th>库存</th>
+          <th>销量</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for goods in goods_list %}
+        <tr>
+          <td>{{ goods.id }}</td>
+          <td>
+            {% if goods.image %}
+            <img src="{{ goods.image.url }}" alt="{{ goods.name }}" style="width:50px;height:50px;object-fit:cover;border-radius:4px;">
+            {% else %}
+            <div style="width:50px;height:50px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📦</div>
+            {% endif %}
+          </td>
+          <td>{{ goods.name }}</td>
+          <td>{{ goods.category.name }}</td>
+          <td>¥{{ goods.price }}</td>
+          <td>{{ goods.stock }}</td>
+          <td>{{ goods.sales }}</td>
+          <td>
+            {% if goods.is_on_sale %}
+            <span class="badge badge-success">上架中</span>
+            {% else %}
+            <span class="badge badge-danger">已下架</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-buttons">
+              <a href="/manage/goods/{{ goods.id }}/edit/" class="btn btn-default btn-sm">编辑</a>
+              <button class="btn {% if goods.is_on_sale %}btn-warning{% else %}btn-success{% endif %} btn-sm" onclick="toggleGoods({{ goods.id }})">
+                {% if goods.is_on_sale %}下架{% else %}上架{% endif %}
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteGoods({{ goods.id }})">删除</button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">&#128230;</div>
+      <p>暂无商品</p>
+      <a href="/manage/goods/add/" class="btn btn-primary" style="margin-top:16px;">添加第一个商品</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleGoods(id) {
+  fetch(`/manage/goods/${id}/toggle/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 800);
+    } else {
+      showToast(data.msg || '操作失败');
+    }
+  });
+}
+
+function deleteGoods(id) {
+  if (!confirm('确定要删除这个商品吗？')) return;
+
+  fetch(`/manage/goods/${id}/delete/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 800);
+    } else {
+      showToast(data.msg || '删除失败');
+    }
+  });
+}
+</script>
+{% endblock %}

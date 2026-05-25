@@ -1,0 +1,102 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}套餐管理{% endblock %}
+{% block menu_combo %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">套餐管理</h1>
+  <a href="/manage/combo/add/" class="btn btn-primary">+ 创建套餐</a>
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding: 0;">
+    {% if combos %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>图片</th>
+          <th>套餐名称</th>
+          <th>套餐价</th>
+          <th>原价</th>
+          <th>商品数</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for combo in combos %}
+        <tr>
+          <td>{{ combo.id }}</td>
+          <td>
+            {% if combo.image %}
+            <img src="{{ combo.image.url }}" alt="套餐图片" style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:#f5f5f5;">
+            {% else %}
+            <div style="width:60px;height:60px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:1.5rem;">&#127873;</div>
+            {% endif %}
+          </td>
+          <td>
+            <div style="font-weight:600;">{{ combo.name }}</div>
+            <div style="font-size:0.8rem;color:#999;margin-top:2px;">{{ combo.desc }}</div>
+            <div style="font-size:0.75rem;color:#666;margin-top:4px;">
+              {% for item in combo.items %}
+              {{ item.goods.name }}x{{ item.quantity }}{% if not forloop.last %}、{% endif %}
+              {% endfor %}
+            </div>
+          </td>
+          <td style="color:#ff4d4f;font-weight:600;">¥{{ combo.price }}</td>
+          <td style="text-decoration:line-through;color:#999;">¥{{ combo.original }}</td>
+          <td>{{ combo.items_count }}</td>
+          <td>
+            {% if combo.is_active %}
+            <span class="badge badge-success">上架中</span>
+            {% else %}
+            <span class="badge badge-danger">已下架</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-buttons">
+              <a href="/manage/combo/{{ combo.id }}/edit/" class="btn btn-default btn-sm">编辑</a>
+              <button class="btn btn-danger btn-sm" onclick="deleteCombo({{ combo.id }})">删除</button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">&#127873;</div>
+      <p>暂无套餐</p>
+      <a href="/manage/combo/add/" class="btn btn-primary" style="margin-top:16px;">创建第一个套餐</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteCombo(id) {
+  if (!confirm('确定要删除这个套餐吗？')) return;
+
+  fetch(`/manage/combo/${id}/delete/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast(data.msg);
+      setTimeout(() => location.reload(), 800);
+    } else {
+      showToast(data.msg || '删除失败');
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 - 天天生鲜</title>
+  <style>
+    /* ========== Reset & Base ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* ========== Variables ========== */
+    :root {
+      --primary: #1a5c2e;
+      --primary-light: #2e7d32;
+      --primary-lighter: #e8f5e9;
+      --accent: #c8963e;
+      --accent-light: #d4a853;
+      --danger: #d32f2f;
+      --danger-light: #ffebee;
+      --text: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --text-tertiary: #86868b;
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --border: #e5e5e7;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========== Header ========== */
+    .header {
+      background: var(--card);
+      box-shadow: 0 1px 0 var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .header-nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    .header-nav a {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      transition: color var(--transition);
+    }
+    .header-nav a:hover { color: var(--primary); }
+    .header-nav a.active { color: var(--primary); font-weight: 600; }
+
+    /* ========== Main Layout ========== */
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 24px;
+      display: flex;
+      gap: 24px;
+    }
+
+    /* ========== Sidebar ========== */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    .sidebar-card {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .user-info {
+      padding: 24px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--primary-lighter);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 12px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .user-avatar:hover .avatar-overlay {
+      opacity: 1;
+    }
+    .avatar-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0.7rem;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .user-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .user-email {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .sidebar-menu {
+      padding: 8px 0;
+    }
+    .menu-item {
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all var(--transition);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .menu-item:hover {
+      background: var(--primary-lighter);
+      color: var(--primary);
+    }
+    .menu-item.active {
+      background: var(--primary-lighter);
+      color: var(--primary);
+      font-weight: 600;
+      border-right: 3px solid var(--primary);
+    }
+    .menu-item .icon {
+      font-size: 1.2rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    /* ========== Content ========== */
+    .content {
+      flex: 1;
+      min-width: 0;
+    }
+    .section {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+    .section-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .dot {
+      width: 4px;
+      height: 18px;
+      border-radius: 2px;
+      background: var(--primary);
+    }
+    .section-body {
+      padding: 24px;
+    }
+
+    /* ========== Profile Section ========== */
+    .profile-form {
+      max-width: 500px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      background: var(--bg);
+      color: var(--text);
+      transition: all var(--transition);
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,92,46,0.1);
+    }
+    .form-input:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .form-hint {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+    }
+
+    /* ========== Orders Section ========== */
+    .order-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .order-tab {
+      padding: 12px 20px;
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+    }
+    .order-tab:hover { color: var(--primary); }
+    .order-tab.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .order-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 1px;
+    }
+    .order-list {
+      padding: 16px 24px;
+    }
+    .order-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: all var(--transition);
+    }
+    .order-item:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--bg);
+      font-size: 0.8rem;
+    }
+    .order-id {
+      color: var(--text-secondary);
+    }
+    .order-status {
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+    }
+    .status-pending { background: #fff3e0; color: #e65100; }
+
+    .expire-countdown {
+      font-size: 0.8rem;
+      color: var(--danger);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+    }
+    .countdown-time {
+      display: inline-block;
+      background: var(--danger);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+    .status-paid { background: #e3f2fd; color: #1565c0; }
+    .status-shipped { background: #e8f5e9; color: #2e7d32; }
+    .status-completed { background: #f3e5f5; color: #7b1fa2; }
+    .order-content {
+      padding: 16px;
+      display: flex;
+      gap: 16px;
+    }
+    .order-product-img {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+    .order-product-info {
+      flex: 1;
+    }
+    .order-product-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .order-product-spec {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+    .order-product-price {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .price {
+      color: var(--danger);
+      font-weight: 700;
+    }
+    .order-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      gap: 12px;
+    }
+    .order-total {
+      font-size: 0.9rem;
+    }
+    .order-total .amount {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--danger);
+    }
+    .order-btn {
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all var(--transition);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+    }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* ========== Address Section ========== */
+    .address-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    .add-address-btn {
+      padding: 8px 20px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all var(--transition);
+    }
+    .add-address-btn:hover { background: var(--primary-light); }
+    .address-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .address-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      transition: all var(--transition);
+      position: relative;
+    }
+    .address-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+    .address-card.default {
+      border-color: var(--primary);
+      background: var(--primary-lighter);
+    }
+    .address-info {
+      display: flex;
+      gap: 12px;
+    }
+    .address-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-lighter);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .address-card.default .address-icon {
+      background: var(--primary);
+      color: #fff;
+    }
+    .address-detail {
+      flex: 1;
+    }
+    .address-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+    .address-phone {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .address-text {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+    }
+    .address-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--primary);
+      color: #fff;
+      margin-top: 8px;
+    }
+    .address-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .address-action-btn {
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+    .address-action-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .address-action-btn.delete:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* ========== Empty State ========== */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+    }
+    .empty-state .icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+    .empty-state .title {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+    .empty-state .desc {
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+
+    /* ========== Toast ========== */
+    /* ========== Modal ========== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .modal-overlay.open { display: flex; opacity: 1; }
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      width: 500px;
+      max-width: 92vw;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform var(--transition);
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 4px;
+      transition: color var(--transition);
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 24px; }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 16px;
+      height: 16px;
+    }
+    .checkbox-group label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* ========== History Section ========== */
+    .history-list {
+      display: grid;
+      gap: 16px;
+    }
+    .history-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+    .history-item:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+    .history-img {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .history-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .history-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .history-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .history-price {
+      color: var(--danger);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .history-time {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .history-actions {
+      display: flex;
+      align-items: center;
+    }
+    .history-delete {
+      padding: 6px 12px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .history-delete:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* ========== Pagination ========== */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .page-btn {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .page-btn:hover:not(.disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .page-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .page-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(0,0,0,0.78);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* ========== Footer ========== */
+    .footer {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      margin-top: 40px;
+    }
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <a href="/home/" class="logo">天天<span>生鲜</span></a>
+    <div class="header-nav">
+      <a href="/home/">首页</a>
+      <a href="/user/center/" class="active">个人中心</a>
+      <a href="/user/logout/">退出登录</a>
+    </div>
+  </div>
+</header>
+
+<!-- Main Container -->
+<div class="container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="user-info">
+        <div class="user-avatar" onclick="document.getElementById('avatarInput').click()">
+          {% if user.avatar %}
+          <img src="{{ user.avatar.url }}" alt="头像">
+          {% else %}
+          &#128100;
+          {% endif %}
+          <div class="avatar-overlay">更换头像</div>
+        </div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+        <div class="user-name">{{ user.username }}</div>
+        <div class="user-email">{{ user.email }}</div>
+      </div>
+      <div class="sidebar-menu">
+        <div class="menu-item active" onclick="switchTab('profile')">
+          <span class="icon">&#128100;</span>
+          <span>个人信息</span>
+        </div>
+        <div class="menu-item" onclick="switchTab('orders')">
+          <span class="icon">&#128230;</span>
+          <span>全部订单</span>
+        </div>
+        <div class="menu-item" onclick="switchTab('address')">
+          <span class="icon">&#128205;</span>
+          <span>收货地址</span>
+        </div>
+        <div class="menu-item" onclick="switchTab('history')">
+          <span class="icon">&#128337;</span>
+          <span>浏览记录</span>
+        </div>
+        <div class="menu-item" onclick="switchTab('favorites')">
+          <span class="icon">&#10084;</span>
+          <span>我的收藏</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="content">
+    <!-- 个人信息 -->
+    <div class="section active" id="section-profile">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="dot"></span>
+          个人信息
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="profile-form">
+          <div class="form-group">
+            <label class="form-label">用户名</label>
+            <input type="text" class="form-input" value="{{ user.username }}" disabled>
+            <div class="form-hint">用户名注册后不可修改</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">邮箱地址</label>
+            <input type="email" class="form-input" value="{{ user.email }}" disabled>
+            <div class="form-hint">邮箱用于接收订单通知和找回密码</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">注册时间</label>
+            <input type="text" class="form-input" value="{{ user.date_joined|date:'Y-m-d H:i' }}" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 全部订单 -->
+    <div class="section" id="section-orders">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="dot"></span>
+          全部订单
+        </div>
+      </div>
+      <div class="order-tabs">
+        <button class="order-tab active" onclick="filterOrders('all', this)">全部</button>
+        <button class="order-tab" onclick="filterOrders('pending', this)">待付款</button>
+        <button class="order-tab" onclick="filterOrders('paid', this)">待发货</button>
+        <button class="order-tab" onclick="filterOrders('shipped', this)">待收货</button>
+        <button class="order-tab" onclick="filterOrders('completed', this)">已完成</button>
+      </div>
+      <div class="order-list" id="orderList">
+        <!-- 订单列表将通过 JavaScript 动态加载 -->
+        <div class="empty-state">
+          <div class="icon">&#128230;</div>
+          <div class="title">暂无订单</div>
+          <div class="desc">快去选购新鲜好物吧</div>
+          <a href="/home/" class="order-btn btn-primary" style="display:inline-block;text-decoration:none;">去购物</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 收货地址 -->
+    <div class="section" id="section-address">
+      <div class="section-header">
+        <div class="address-header">
+          <div class="section-title">
+            <span class="dot"></span>
+            收货地址
+          </div>
+          <button class="add-address-btn" onclick="addNewAddress()">+ 新增收货地址</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="address-list" id="addressList">
+          <!-- 地址列表将通过 JavaScript 动态加载 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 浏览记录 -->
+    <div class="section" id="section-history">
+      <div class="section-header">
+        <div class="address-header">
+          <div class="section-title">
+            <span class="dot"></span>
+            浏览记录
+          </div>
+          <button class="add-address-btn" onclick="clearHistory()" style="background:var(--danger);">清空记录</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="history-list" id="historyList">
+          <!-- 浏览记录将通过 JavaScript 动态加载 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 我的收藏 -->
+    <div class="section" id="section-favorites">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="dot"></span>
+          我的收藏
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="history-list" id="favoritesList">
+          <!-- 收藏列表将通过 JavaScript 动态加载 -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Address Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>&#128226; 编辑收货地址</h3>
+      <button class="modal-close" onclick="closeEditModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <form id="editForm" onsubmit="return handleEditSubmit(event)">
+        <input type="hidden" id="editAddressId">
+        <div class="form-group">
+          <label class="form-label">收件人 <span style="color:var(--danger)">*</span></label>
+          <input type="text" class="form-input" id="editName" placeholder="请输入收件人姓名" maxlength="20" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系电话 <span style="color:var(--danger)">*</span></label>
+          <input type="tel" class="form-input" id="editMobile" placeholder="请输入11位手机号码" maxlength="11" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">详细地址 <span style="color:var(--danger)">*</span></label>
+          <textarea class="form-input" id="editAddress" placeholder="请输入详细地址" maxlength="100" required style="min-height:80px;resize:vertical;"></textarea>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="editDefault">
+          <label for="editDefault">设为默认收货地址</label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeEditModal()">取消</button>
+          <button type="submit" class="btn-primary">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p class="footer-copy">&#169; 2026 天天生鲜 版权所有 | 增值电信业务经营许可证 | 食品经营许可证</p>
+</footer>
+
+<script>
+// ========== 地址数据 ==========
+let addresses = [];
+
+// ========== 初始化 ==========
+let currentOrderStatus = 'all';
+let orderPage = 1;
+const orderPageSize = 10;
+
+function init() {
+  loadAddresses();
+  loadHistory();
+  loadOrders('all');
+
+  // 检查URL参数，自动切换到对应tab
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+  if (tab) {
+    switchToTab(tab);
+  }
+}
+
+// 根据名称切换tab（不依赖event对象）
+function switchToTab(tabName) {
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  const menuItems = document.querySelectorAll('.menu-item');
+  const tabMap = { 'profile': 0, 'orders': 1, 'address': 2, 'history': 3 };
+  if (tabMap[tabName] !== undefined && menuItems[tabMap[tabName]]) {
+    menuItems[tabMap[tabName]].classList.add('active');
+  }
+
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.remove('active');
+  });
+  document.getElementById('section-' + tabName).classList.add('active');
+
+  if (tabName === 'orders') {
+    loadOrders(currentOrderStatus);
+  }
+}
+
+// ========== 头像上传 ==========
+function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // 验证文件类型
+  if (!file.type.startsWith('image/')) {
+    showToast('请选择图片文件');
+    return;
+  }
+
+  // 验证文件大小 (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('头像大小不能超过2MB');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  fetch('/user/avatar/upload/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('头像上传成功');
+      // 刷新页面显示新头像
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      showToast(data.msg || '上传失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+
+  // 清空input
+  input.value = '';
+}
+
+// ========== Tab 切换 ==========
+function switchTab(tabName) {
+  // 更新菜单状态
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  event.currentTarget.classList.add('active');
+
+  // 更新内容区域
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.remove('active');
+  });
+  document.getElementById('section-' + tabName).classList.add('active');
+
+  // 切换到订单tab时重新加载
+  if (tabName === 'orders') {
+    loadOrders(currentOrderStatus);
+  }
+  // 切换到收藏tab时加载收藏
+  if (tabName === 'favorites') {
+    loadFavorites();
+  }
+}
+
+// ========== 订单筛选 ==========
+function filterOrders(status, btn) {
+  // 更新 tab 状态
+  document.querySelectorAll('.order-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  btn.classList.add('active');
+
+  currentOrderStatus = status;
+  orderPage = 1;
+  loadOrders(status);
+}
+
+function loadOrders(status, page) {
+  currentOrderStatus = status || currentOrderStatus;
+  orderPage = page || 1;
+
+  fetch(`/order/list/?status=${currentOrderStatus}&page=${orderPage}&page_size=${orderPageSize}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      renderOrders(data.data);
+      updateOrderTabs(data.data.status_counts);
+    }
+  })
+  .catch(error => {
+    console.log('加载订单失败:', error);
+  });
+}
+
+function updateOrderTabs(counts) {
+  const tabs = document.querySelectorAll('.order-tab');
+  tabs.forEach(tab => {
+    const status = tab.getAttribute('onclick').match(/'(\w+)'/)[1];
+    const count = counts[status] || 0;
+    // 更新tab文本
+    const baseText = {
+      'all': '全部',
+      'pending': '待付款',
+      'paid': '待发货',
+      'shipped': '待收货',
+      'completed': '已完成'
+    }[status];
+    tab.textContent = count > 0 ? `${baseText}(${count})` : baseText;
+  });
+}
+
+function renderOrders(data) {
+  const container = document.getElementById('orderList');
+  const { list, total, page, page_size, total_pages } = data;
+
+  if (total === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#128230;</div>
+        <div class="title">暂无订单</div>
+        <div class="desc">快去选购新鲜好物吧</div>
+        <a href="/home/" class="order-btn btn-primary" style="display:inline-block;text-decoration:none;">去购物</a>
+      </div>
+    `;
+    return;
+  }
+
+  let html = list.map(order => {
+    const statusClass = {
+      'pending': 'status-pending',
+      'paid': 'status-paid',
+      'shipped': 'status-shipped',
+      'completed': 'status-completed',
+      'cancelled': 'status-completed'
+    }[order.status] || '';
+
+    const goodsHtml = order.goods_items.map(item => `
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">
+        <div class="order-product-img">
+          ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">` : '&#128230;'}
+        </div>
+        <div style="flex:1;">
+          <div class="order-product-name">${item.name}</div>
+          <div class="order-product-price">
+            <span class="price">&#165;${item.price.toFixed(2)}</span>
+            <span style="color:var(--text-tertiary);font-size:0.8rem;">x${item.quantity}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // 操作按钮和过期时间
+    let actionsHtml = '';
+    let expireHtml = '';
+    if (order.status === 'pending') {
+      actionsHtml = `
+        <button class="order-btn btn-outline" onclick="cancelOrder(${order.id})">取消订单</button>
+        <button class="order-btn btn-primary" onclick="payOrder(${order.id})">去付款</button>
+      `;
+      if (order.expire_time) {
+        expireHtml = `<div id="expire-${order.id}" class="expire-countdown" data-expire="${order.expire_time}"></div>`;
+      }
+    } else if (order.status === 'shipped') {
+      actionsHtml = `
+        <button class="order-btn btn-primary" onclick="receiveOrder(${order.id})">确认收货</button>
+      `;
+    }
+
+    return `
+      <div class="order-item">
+        <div class="order-header">
+          <span class="order-id">订单号：${order.order_no}</span>
+          <span class="order-status ${statusClass}">${order.status_display}</span>
+        </div>
+        <div class="order-content">
+          <div style="flex:1;">${goodsHtml}</div>
+        </div>
+        <div class="order-footer">
+          <span class="order-total">共${order.goods_items.reduce((s, g) => s + g.quantity, 0)}件 合计：<span class="amount">&#165;${order.total_amount.toFixed(2)}</span></span>
+          ${actionsHtml}
+        </div>
+        ${expireHtml}
+      </div>
+    `;
+  }).join('');
+
+  // 添加分页控件
+  if (total_pages > 1) {
+    html += `<div class="pagination">`;
+    html += `<button class="page-btn ${page <= 1 ? 'disabled' : ''}" onclick="loadOrders('${currentOrderStatus}', ${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>`;
+    for (let i = 1; i <= total_pages; i++) {
+      html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadOrders('${currentOrderStatus}', ${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn ${page >= total_pages ? 'disabled' : ''}" onclick="loadOrders('${currentOrderStatus}', ${page + 1})" ${page >= total_pages ? 'disabled' : ''}>下一页</button>`;
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+  startCountdowns();
+}
+
+let countdownTimer = null;
+
+function startCountdowns() {
+  if (countdownTimer) clearInterval(countdownTimer);
+  updateCountdowns();
+  countdownTimer = setInterval(updateCountdowns, 1000);
+}
+
+function updateCountdowns() {
+  const els = document.querySelectorAll('.expire-countdown');
+  if (els.length === 0) {
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    return;
+  }
+
+  let hasActive = false;
+  els.forEach(el => {
+    const expireStr = el.dataset.expire;
+    const remain = getRemainTime(expireStr);
+    if (remain > 0) {
+      hasActive = true;
+      const m = Math.floor(remain / 60);
+      const s = remain % 60;
+      const mm = String(m).padStart(2, '0');
+      const ss = String(s).padStart(2, '0');
+      el.innerHTML = `&#9200; 剩余支付时间：<span class="countdown-time">${mm}:${ss}</span>`;
+    } else {
+      el.innerHTML = `<span style="color:var(--text-tertiary);">已超时，将自动取消</span>`;
+    }
+  });
+
+  if (!hasActive && countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+}
+
+function payOrder(orderId) {
+  if (!confirm('确认付款？')) return;
+
+  fetch(`/order/${orderId}/pay/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('付款成功');
+      loadOrders(currentOrderStatus);
+    } else {
+      showToast(data.msg || '操作失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+function receiveOrder(orderId) {
+  if (!confirm('确认收货？')) return;
+
+  fetch(`/order/${orderId}/receive/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('确认收货成功');
+      loadOrders(currentOrderStatus);
+    } else {
+      showToast(data.msg || '操作失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+function cancelOrder(orderId) {
+  if (!confirm('确定要取消这个订单吗？')) return;
+
+  fetch(`/order/${orderId}/cancel/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('订单已取消');
+      loadOrders(currentOrderStatus);
+    } else {
+      showToast(data.msg || '操作失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+// ========== 地址管理 ==========
+function loadAddresses() {
+  fetch('/user/address/', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      addresses = data.data || [];
+      renderAddresses();
+    }
+  })
+  .catch(error => {
+    console.log('加载地址失败:', error);
+    renderAddresses();
+  });
+}
+
+function renderAddresses() {
+  const list = document.getElementById('addressList');
+
+  if (addresses.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#128205;</div>
+        <div class="title">暂无收货地址</div>
+        <div class="desc">添加收货地址，方便快速下单</div>
+        <button class="add-address-btn" onclick="addNewAddress()">+ 添加收货地址</button>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = addresses.map(addr => `
+    <div class="address-card ${addr.is_default ? 'default' : ''}">
+      <div class="address-info">
+        <div class="address-icon">${addr.is_default ? '&#9733;' : '&#128205;'}</div>
+        <div class="address-detail">
+          <div class="address-name">${addr.receiver_name}</div>
+          <div class="address-phone">${addr.receiver_mobile}</div>
+          <div class="address-text">${addr.address}</div>
+          ${addr.is_default ? '<span class="address-tag">默认地址</span>' : ''}
+        </div>
+      </div>
+      <div class="address-actions">
+        ${!addr.is_default ? `<button class="address-action-btn" onclick="setDefault(${addr.id})">设为默认</button>` : ''}
+        <button class="address-action-btn" onclick="editAddress(${addr.id})">编辑</button>
+        <button class="address-action-btn delete" onclick="deleteAddress(${addr.id})">删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addNewAddress() {
+  window.location.href = '/user/address/new/?source=center';
+}
+
+// 编辑地址 - 打开弹窗
+function editAddress(id) {
+  // 获取地址信息
+  fetch(`/user/address/${id}/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      const addr = data.data;
+      document.getElementById('editAddressId').value = addr.id;
+      document.getElementById('editName').value = addr.receiver_name;
+      document.getElementById('editMobile').value = addr.receiver_mobile;
+      document.getElementById('editAddress').value = addr.address;
+      document.getElementById('editDefault').checked = addr.is_default;
+
+      openEditModal();
+    } else {
+      showToast('获取地址信息失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+// 打开编辑弹窗
+function openEditModal() {
+  const modal = document.getElementById('editModal');
+  modal.style.display = 'flex';
+  requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+// 关闭编辑弹窗
+function closeEditModal() {
+  const modal = document.getElementById('editModal');
+  modal.classList.remove('open');
+  setTimeout(() => modal.style.display = 'none', 250);
+}
+
+// 提交编辑表单
+function handleEditSubmit(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('editAddressId').value;
+  const name = document.getElementById('editName').value.trim();
+  const mobile = document.getElementById('editMobile').value.trim();
+  const address = document.getElementById('editAddress').value.trim();
+  const isDefault = document.getElementById('editDefault').checked;
+
+  // 验证
+  if (!name || name.length < 2) {
+    showToast('请输入有效的收件人姓名');
+    return false;
+  }
+  if (!mobile || !/^1\d{10}$/.test(mobile)) {
+    showToast('请输入正确的11位手机号码');
+    return false;
+  }
+  if (!address || address.length < 5) {
+    showToast('请输入完整的详细地址');
+    return false;
+  }
+
+  // 提交更新
+  fetch(`/user/address/${id}/update/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({
+      receiver_name: name,
+      receiver_mobile: mobile,
+      address: address,
+      is_default: isDefault
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('地址更新成功');
+      closeEditModal();
+      loadAddresses(); // 重新加载地址列表
+    } else {
+      showToast(data.msg || '更新失败，请重试');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+
+  return false;
+}
+
+// 删除地址
+function deleteAddress(id) {
+  if (!confirm('确定要删除这个地址吗？')) {
+    return;
+  }
+
+  fetch(`/user/address/${id}/delete/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('地址删除成功');
+      loadAddresses(); // 重新加载地址列表
+    } else {
+      showToast(data.msg || '删除失败，请重试');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+// 设置默认地址
+function setDefault(id) {
+  fetch(`/user/address/${id}/set-default/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('默认地址设置成功');
+      loadAddresses(); // 重新加载地址列表
+    } else {
+      showToast(data.msg || '设置失败，请重试');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+// ========== 浏览记录 ==========
+let historyPage = 1;
+const historyPageSize = 5;
+
+function loadHistory(page) {
+  historyPage = page || 1;
+  fetch(`/user/history/?page=${historyPage}&page_size=${historyPageSize}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      renderHistory(data.data);
+    }
+  })
+  .catch(error => {
+    console.log('加载浏览记录失败:', error);
+  });
+}
+
+function renderHistory(data) {
+  const container = document.getElementById('historyList');
+  const { list, total, page, page_size, total_pages } = data;
+
+  if (total === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#128337;</div>
+        <div class="title">暂无浏览记录</div>
+        <div class="desc">快去浏览商品吧</div>
+        <a href="/home/" class="order-btn btn-primary" style="display:inline-block;text-decoration:none;">去购物</a>
+      </div>
+    `;
+    return;
+  }
+
+  let html = list.map(item => `
+    <div class="history-item" onclick="window.location.href='/goods/${item.goods_id}/'">
+      <div class="history-img">
+        ${item.goods_image ? `<img src="${item.goods_image}" alt="${item.goods_name}">` : '&#128230;'}
+      </div>
+      <div class="history-info">
+        <div class="history-name">${item.goods_name}</div>
+        <div class="history-price">&#165;${item.goods_price.toFixed(2)}</div>
+        <div class="history-time">浏览时间：${item.browse_time}</div>
+      </div>
+      <div class="history-actions">
+        <button class="history-delete" onclick="event.stopPropagation(); deleteHistory(${item.goods_id})">删除</button>
+      </div>
+    </div>
+  `).join('');
+
+  // 添加分页控件
+  if (total_pages > 1) {
+    html += `<div class="pagination">`;
+    html += `<button class="page-btn ${page <= 1 ? 'disabled' : ''}" onclick="loadHistory(${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>`;
+    for (let i = 1; i <= total_pages; i++) {
+      html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadHistory(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn ${page >= total_pages ? 'disabled' : ''}" onclick="loadHistory(${page + 1})" ${page >= total_pages ? 'disabled' : ''}>下一页</button>`;
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function deleteHistory(id) {
+  fetch(`/user/history/${id}/delete/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('删除成功');
+      loadHistory();
+    } else {
+      showToast(data.msg || '删除失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+function clearHistory() {
+  if (!confirm('确定要清空所有浏览记录吗？')) {
+    return;
+  }
+
+  fetch('/user/history/clear/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('清空成功');
+      loadHistory();
+    } else {
+      showToast(data.msg || '清空失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+// ========== 我的收藏 ==========
+let favoritesPage = 1;
+const favoritesPageSize = 10;
+
+function loadFavorites(page) {
+  favoritesPage = page || 1;
+  fetch(`/user/favorites/?page=${favoritesPage}&page_size=${favoritesPageSize}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      renderFavorites(data.data);
+    }
+  })
+  .catch(error => {
+    console.log('加载收藏失败:', error);
+  });
+}
+
+function renderFavorites(data) {
+  const container = document.getElementById('favoritesList');
+  const { list, total, page, page_size, total_pages } = data;
+
+  if (total === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#10084;</div>
+        <div class="title">暂无收藏</div>
+        <div class="desc">去收藏喜欢的商品吧</div>
+        <a href="/home/" class="order-btn btn-primary" style="display:inline-block;text-decoration:none;">去购物</a>
+      </div>
+    `;
+    return;
+  }
+
+  let html = list.map(item => `
+    <div class="history-item" onclick="window.location.href='/goods/${item.goods_id}/'">
+      <div class="history-img">
+        ${item.goods_image ? `<img src="${item.goods_image}" alt="${item.goods_name}">` : '&#128230;'}
+      </div>
+      <div class="history-info">
+        <div class="history-name">${item.goods_name}</div>
+        <div class="history-price">&#165;${item.goods_price.toFixed(2)}</div>
+        <div class="history-time">${item.is_on_sale ? '' : '<span style="color:#999;">已下架</span>'} 收藏时间：${item.create_time}</div>
+      </div>
+      <div class="history-actions">
+        <button class="history-delete" onclick="event.stopPropagation(); deleteFavorite(${item.id})">取消收藏</button>
+      </div>
+    </div>
+  `).join('');
+
+  // 添加分页控件
+  if (total_pages > 1) {
+    html += `<div class="pagination">`;
+    html += `<button class="page-btn ${page <= 1 ? 'disabled' : ''}" onclick="loadFavorites(${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>`;
+    for (let i = 1; i <= total_pages; i++) {
+      html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadFavorites(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn ${page >= total_pages ? 'disabled' : ''}" onclick="loadFavorites(${page + 1})" ${page >= total_pages ? 'disabled' : ''}>下一页</button>`;
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function deleteFavorite(id) {
+  if (!confirm('确定要取消收藏吗？')) return;
+
+  fetch(`/user/favorite/${id}/delete/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('已取消收藏');
+      loadFavorites();
+    } else {
+      showToast(data.msg || '操作失败');
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+  });
+}
+
+// ========== 时间工具 ==========
+function getRemainTime(expireTimeStr) {
+  const expire = new Date(expireTimeStr);
+  const now = new Date();
+  return Math.floor((expire - now) / 1000);
+}
+
+function formatRemain(seconds) {
+  if (seconds <= 0) return '已超时';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) return `${m}分${s}秒`;
+  return `${s}秒`;
+}
+
+// ========== Toast ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ========== Cookie ==========
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// ========== 键盘事件 ==========
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeEditModal();
+  }
+});
+
+// 点击弹窗外部关闭
+document.getElementById('editModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('editModal')) {
+    closeEditModal();
+  }
+});
+
+// ========== 启动 ==========
+init();
+</script>
+
+</body>
+</html>

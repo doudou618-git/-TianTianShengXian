@@ -1,0 +1,157 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}{% if action == 'add' %}添加商品{% else %}编辑商品{% endif %}{% endblock %}
+{% block menu_goods %}active{% endblock %}
+
+{% block content %}
+<a href="/manage/goods/" class="back-link">← 返回商品列表</a>
+
+<div class="page-header">
+  <h1 class="page-title">{% if action == 'add' %}添加商品{% else %}编辑商品{% endif %}</h1>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form id="goodsForm" enctype="multipart/form-data" onsubmit="return handleSubmit(event)">
+      <div class="inline-form">
+        <div class="form-group">
+          <label class="form-label">商品名称 <span class="required">*</span></label>
+          <input type="text" class="form-input" name="name" value="{{ goods.name|default:'' }}" placeholder="请输入商品名称" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">所属分类 <span class="required">*</span></label>
+          <select class="form-select" name="category_id" required>
+            <option value="">请选择分类</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if goods.category.id == cat.id %}selected{% endif %}>
+              {{ cat.icon }} {{ cat.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">商品描述</label>
+        <textarea class="form-textarea" name="desc" placeholder="请输入商品描述">{{ goods.desc|default:'' }}</textarea>
+      </div>
+
+      <div class="inline-form">
+        <div class="form-group">
+          <label class="form-label">价格 <span class="required">*</span></label>
+          <input type="number" class="form-input" name="price" value="{{ goods.price|default:'0' }}" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">单位</label>
+          <input type="text" class="form-input" name="unit" value="{{ goods.unit|default:'份' }}" placeholder="如：份、斤、个">
+        </div>
+        <div class="form-group">
+          <label class="form-label">库存</label>
+          <input type="number" class="form-input" name="stock" value="{{ goods.stock|default:'0' }}" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">排序</label>
+          <input type="number" class="form-input" name="sort" value="{{ goods.sort|default:'0' }}" placeholder="数字越大越靠前">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">商品图片</label>
+        <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+          <div class="icon">&#128247;</div>
+          <div>点击上传图片</div>
+          <div class="form-hint">支持 JPG、PNG 格式</div>
+        </div>
+        <input type="file" id="imageInput" name="image" accept="image/*" style="display:none;" onchange="previewImage(this)">
+        {% if goods.image %}
+        <img id="imagePreview" src="{{ goods.image.url }}" class="image-preview">
+        {% else %}
+        <img id="imagePreview" class="image-preview" style="display:none;">
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">商品状态</label>
+        <div style="display:flex;gap:24px;">
+          <label class="checkbox-group">
+            <input type="checkbox" name="is_on_sale" {% if goods.is_on_sale or action == 'add' %}checked{% endif %}>
+            <span>上架销售</span>
+          </label>
+          <label class="checkbox-group">
+            <input type="checkbox" name="is_hot" {% if goods.is_hot %}checked{% endif %}>
+            <span>热销商品</span>
+          </label>
+          <label class="checkbox-group">
+            <input type="checkbox" name="is_new" {% if goods.is_new %}checked{% endif %}>
+            <span>新品推荐</span>
+          </label>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          {% if action == 'add' %}添加商品{% else %}保存修改{% endif %}
+        </button>
+        <a href="/manage/goods/" class="btn btn-default" style="margin-left:12px;">取消</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewImage(input) {
+  const preview = document.getElementById('imagePreview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    }
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function handleSubmit(e) {
+  e.preventDefault();
+
+  const form = document.getElementById('goodsForm');
+  const formData = new FormData(form);
+  const btn = document.getElementById('submitBtn');
+
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  const url = {% if action == 'add' %}'/manage/goods/add/'{% else %}'/manage/goods/{{ goods.id }}/edit/'{% endif %};
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast(data.msg);
+      setTimeout(() => {
+        window.location.href = data.url;
+      }, 800);
+    } else {
+      showToast(data.msg || '保存失败');
+      btn.disabled = false;
+      btn.textContent = '{% if action == "add" %}添加商品{% else %}保存修改{% endif %}';
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+    btn.disabled = false;
+    btn.textContent = '{% if action == "add" %}添加商品{% else %}保存修改{% endif %}';
+  });
+
+  return false;
+}
+</script>
+{% endblock %}

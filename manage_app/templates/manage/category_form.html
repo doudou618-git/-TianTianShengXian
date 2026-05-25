@@ -1,0 +1,86 @@
+{% extends 'manage/base.html' %}
+
+{% block title %}{% if action == 'add' %}添加分类{% else %}编辑分类{% endif %}{% endblock %}
+{% block menu_category %}active{% endblock %}
+
+{% block content %}
+<a href="/manage/categories/" class="back-link">← 返回分类列表</a>
+
+<div class="page-header">
+  <h1 class="page-title">{% if action == 'add' %}添加分类{% else %}编辑分类{% endif %}</h1>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form id="categoryForm" onsubmit="return handleSubmit(event)" style="max-width:500px;">
+      <div class="form-group">
+        <label class="form-label">分类名称 <span class="required">*</span></label>
+        <input type="text" class="form-input" name="name" value="{{ category.name|default:'' }}" placeholder="请输入分类名称" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">分类图标</label>
+        <input type="text" class="form-input" name="icon" value="{{ category.icon|default:'📦' }}" placeholder="输入emoji图标，如：🥬🍎🥩">
+        <div class="form-hint">可以使用 emoji 表情作为分类图标</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">排序</label>
+        <input type="number" class="form-input" name="sort" value="{{ category.sort|default:'0' }}" placeholder="数字越大越靠前">
+      </div>
+
+      <div style="margin-top:24px;">
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          {% if action == 'add' %}添加分类{% else %}保存修改{% endif %}
+        </button>
+        <a href="/manage/categories/" class="btn btn-default" style="margin-left:12px;">取消</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function handleSubmit(e) {
+  e.preventDefault();
+
+  const form = document.getElementById('categoryForm');
+  const formData = new FormData(form);
+  const btn = document.getElementById('submitBtn');
+
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  const url = {% if action == 'add' %}'/manage/categories/add/'{% else %}'/manage/categories/{{ category.id }}/edit/'{% endif %};
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast(data.msg);
+      setTimeout(() => {
+        window.location.href = data.url;
+      }, 800);
+    } else {
+      showToast(data.msg || '保存失败');
+      btn.disabled = false;
+      btn.textContent = '{% if action == "add" %}添加分类{% else %}保存修改{% endif %}';
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+    btn.disabled = false;
+    btn.textContent = '{% if action == "add" %}添加分类{% else %}保存修改{% endif %}';
+  });
+
+  return false;
+}
+</script>
+{% endblock %}
