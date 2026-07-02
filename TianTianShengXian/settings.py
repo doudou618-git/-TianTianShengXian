@@ -19,6 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / '.env')
 
+# 导入日志配置
+from .logging_config import LOGGING
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -26,9 +29,13 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-n0cagxpj_bl(ypa$db9cjg6%9unedn3hjnu=d21+fvt=@!nnz%')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# ... existing code ...
+
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else ['localhost', '127.0.0.1', '.cpolar.top']
+
+# ... existing code ...
 
 
 # Application definition
@@ -142,6 +149,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'user.UserInfo'
 
+
+
+
 # Redis配置
 REDIS_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')
 CACHES = {
@@ -172,13 +182,44 @@ CACHES = {
 CART_MAX_ITEMS = 200        # 购物车最大商品种类数
 BROWSE_HISTORY_MAX = 50     # 每个用户最多保留浏览记录数
 
-# 邮件配置（开发环境使用控制台输出）
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# 生产环境切换为 SMTP：
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.qq.com'
-# EMAIL_PORT = 465
-# EMAIL_USE_SSL = True
-# EMAIL_HOST_USER = 'xxx@qq.com'
-# EMAIL_HOST_PASSWORD = '授权码'
-DEFAULT_FROM_EMAIL = '天天生鲜 <noreply@tiantian.com>'
+# 邮件配置（QQ邮箱SMTP）
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.qq.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '465'))
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'True').lower() in ('true', '1', 'yes')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '3384225904@qq.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'ujhovbhsrjfldbbh')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', '天天生鲜 <3384225904@qq.com>')
+
+
+# ==================== Celery 配置 ====================
+# Broker（消息中间件）使用 Redis
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://127.0.0.1:6379/3')
+
+# Result Backend（结果存储）使用 Redis
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://127.0.0.1:6379/4')
+
+# 序列化格式
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+# 时区设置
+CELERY_TIMEZONE = 'Asia/Shanghai'
+
+# 任务结果过期时间（秒）- 1小时
+CELERY_RESULT_EXPIRES = 3600
+
+# 任务超时时间（秒）- 30秒
+CELERY_TASK_TIME_LIMIT = 30
+
+# 任务软超时时间（秒）- 25秒
+CELERY_TASK_SOFT_TIME_LIMIT = 25
+
+# 并发 Worker 数量
+CELERY_WORKER_CONCURRENCY = 4
+
+# 预取数量（每个 Worker 预取的任务数）
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+
+

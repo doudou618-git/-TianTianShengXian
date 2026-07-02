@@ -798,6 +798,10 @@
           <span class="icon">&#10084;</span>
           <span>我的收藏</span>
         </div>
+        <div class="menu-item" onclick="openDeleteAccountModal()" style="color:var(--danger);">
+          <span class="icon">&#128465;</span>
+          <span>注销账号</span>
+        </div>
       </div>
     </div>
   </aside>
@@ -948,6 +952,43 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- Delete Account Modal -->
+<div class="modal-overlay" id="deleteAccountModal">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-header">
+      <h3>&#9888;&#65039; 注销账号</h3>
+      <button class="modal-close" onclick="closeDeleteAccountModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:3rem; margin-bottom:12px;">&#128683;</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--danger); margin-bottom:12px;">此操作不可撤销！</div>
+        <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.8;">
+          注销账号后，以下数据将被<strong>永久删除</strong>：<br>
+          &#8226; 用户名和登录凭证<br>
+          &#8226; 所有收货地址<br>
+          &#8226; 浏览记录和收藏<br>
+          &#8226; 账户所有相关信息<br><br>
+          注销后，您的用户名和邮箱将被释放，<br>
+          可以重新注册新账号。
+        </div>
+      </div>
+      <div class="checkbox-group" style="justify-content:center;">
+        <input type="checkbox" id="confirmDelete">
+        <label for="confirmDelete">我已了解以上风险，确认注销账号</label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">请输入密码确认操作</label>
+        <input type="password" class="form-input" id="deletePassword" placeholder="请输入登录密码">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeDeleteAccountModal()" style="padding:10px 24px;border-radius:8px;font-size:0.9rem;">取消</button>
+      <button class="btn-primary" id="confirmDeleteBtn" onclick="confirmDeleteAccount()" style="padding:10px 24px;border-radius:8px;font-size:0.9rem;background:var(--danger);">确认注销</button>
+    </div>
+  </div>
+</div>
 
 <!-- Footer -->
 <footer class="footer">
@@ -1794,6 +1835,66 @@ document.getElementById('editModal').addEventListener('click', (e) => {
     closeEditModal();
   }
 });
+
+// ========== 注销账号 ==========
+function openDeleteAccountModal() {
+  document.getElementById('confirmDelete').checked = false;
+  document.getElementById('deletePassword').value = '';
+  const modal = document.getElementById('deleteAccountModal');
+  modal.style.display = 'flex';
+  requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+function closeDeleteAccountModal() {
+  const modal = document.getElementById('deleteAccountModal');
+  modal.classList.remove('open');
+  setTimeout(() => modal.style.display = 'none', 250);
+}
+
+function confirmDeleteAccount() {
+  const confirmed = document.getElementById('confirmDelete').checked;
+  const password = document.getElementById('deletePassword').value;
+
+  if (!confirmed) {
+    showToast('请先勾选确认注销选项');
+    return;
+  }
+  if (!password) {
+    showToast('请输入密码确认操作');
+    return;
+  }
+
+  const btn = document.getElementById('confirmDeleteBtn');
+  btn.disabled = true;
+  btn.textContent = '注销中...';
+
+  fetch('/user/delete-account/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({ password })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.code === 200) {
+      showToast('账号已注销，即将跳转...');
+      setTimeout(() => {
+        window.location.href = data.url || '/home/';
+      }, 1500);
+    } else {
+      showToast(data.msg || '注销失败');
+      btn.disabled = false;
+      btn.textContent = '确认注销';
+    }
+  })
+  .catch(error => {
+    showToast('网络错误，请重试');
+    btn.disabled = false;
+    btn.textContent = '确认注销';
+  });
+}
 
 // ========== 启动 ==========
 init();

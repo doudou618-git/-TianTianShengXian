@@ -243,10 +243,119 @@
       opacity: 1;
     }
 
+    /* 弹窗样式 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.open {
+      display: flex;
+      opacity: 1;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 600px;
+      max-width: 92vw;
+      max-height: 80vh;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      transform: scale(0.95);
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-overlay.open .modal {
+      transform: scale(1);
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e8e8e8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .modal-header h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #999;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .modal-close:hover {
+      color: #333;
+      background: #f5f5f5;
+    }
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: #444;
+    }
+    .modal-body h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #333;
+      margin: 20px 0 10px;
+    }
+    .modal-body h4:first-child {
+      margin-top: 0;
+    }
+    .modal-body p {
+      margin-bottom: 12px;
+      text-indent: 2em;
+    }
+    .modal-body ul {
+      margin: 10px 0;
+      padding-left: 2em;
+    }
+    .modal-body ul li {
+      margin-bottom: 8px;
+    }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e8e8e8;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .modal-btn {
+      padding: 10px 40px;
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-btn:hover {
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+    }
+
     @media (max-width: 480px) {
       .register-wrapper { padding: 16px; }
       .form-content { padding: 24px 20px 28px; }
       .register-logo .logo-text { font-size: 1.6rem; }
+      .modal { max-height: 85vh; }
+      .modal-body { padding: 16px; font-size: 0.85rem; }
     }
   </style>
 </head>
@@ -272,33 +381,24 @@
         </div>
 
         <div class="form-group">
-          <label>手机号</label>
-          <div class="input-wrapper">
-            <input type="tel" id="regPhone" placeholder="请输入11位手机号码" maxlength="11" required>
-            <span class="icon">&#128241;</span>
-          </div>
-          <div class="error-msg" id="regPhoneError"></div>
-        </div>
-
-        <div class="form-group">
-          <label>短信验证码</label>
-          <div class="sms-row">
-            <div class="input-wrapper">
-              <input type="text" id="regSmsCode" placeholder="请输入6位验证码" maxlength="6" required>
-              <span class="icon">&#128231;</span>
-            </div>
-            <button type="button" class="sms-btn" id="smsBtn" onclick="sendSmsCode()">获取验证码</button>
-          </div>
-          <div class="error-msg" id="regSmsCodeError"></div>
-        </div>
-
-        <div class="form-group">
           <label>邮箱</label>
           <div class="input-wrapper">
-            <input type="email" id="regEmail" placeholder="用于接收订单通知和找回密码">
+            <input type="email" id="regEmail" placeholder="请输入邮箱地址" required>
             <span class="icon">&#9993;</span>
           </div>
           <div class="error-msg" id="regEmailError"></div>
+        </div>
+
+        <div class="form-group">
+          <label>邮箱验证码</label>
+          <div class="sms-row">
+            <div class="input-wrapper">
+              <input type="text" id="regEmailCode" placeholder="请输入6位验证码" maxlength="6" required>
+              <span class="icon">&#128231;</span>
+            </div>
+            <button type="button" class="sms-btn" id="emailCodeBtn" onclick="sendEmailCode()">获取验证码</button>
+          </div>
+          <div class="error-msg" id="regEmailCodeError"></div>
         </div>
 
         <div class="form-group">
@@ -335,14 +435,165 @@
 
       <div class="agreement">
         注册即表示同意
-        <a href="javascript:void(0)">《用户服务协议》</a> 和
-        <a href="javascript:void(0)">《隐私政策》</a>
+        <a href="javascript:void(0)" onclick="openModal('serviceModal')">《用户服务协议》</a> 和
+        <a href="javascript:void(0)" onclick="openModal('privacyModal')">《隐私政策》</a>
       </div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- 用户服务协议弹窗 -->
+<div class="modal-overlay" id="serviceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📋 用户服务协议</h3>
+      <button class="modal-close" onclick="closeModal('serviceModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <h4>一、总则</h4>
+      <p>欢迎使用天天生鲜平台（以下简称"本平台"）。本平台由天天生鲜运营团队（以下简称"我们"）负责运营。在您注册成为本平台用户之前，请您仔细阅读本协议的全部内容。</p>
+      <p>当您点击"注册"按钮时，即表示您已充分阅读、理解并同意接受本协议的全部条款和条件。如果您不同意本协议的任何条款，请您停止注册。</p>
+
+      <h4>二、账户注册与管理</h4>
+      <p>1. 您在注册时应提供真实、准确、完整的个人信息，包括但不限于用户名、邮箱地址等。</p>
+      <p>2. 您应妥善保管您的账户和密码，因您的保管不当而导致的任何损失或损害，我们不承担任何责任。</p>
+      <p>3. 您同意在发现账户被未经授权使用时，立即通知本平台。</p>
+      <p>4. 本平台有权根据实际情况，在必要时冻结、注销或删除用户的账户。</p>
+
+      <h4>三、用户行为规范</h4>
+      <p>您在使用本平台时，应遵守以下规范：</p>
+      <ul>
+        <li>遵守中华人民共和国相关法律法规；</li>
+        <li>不得利用本平台从事任何违法或不当行为；</li>
+        <li>不得侵犯他人的合法权益；</li>
+        <li>不得发布虚假、误导性信息；</li>
+        <li>不得干扰本平台的正常运营。</li>
+      </ul>
+
+      <h4>四、商品与订单</h4>
+      <p>1. 本平台展示的商品信息仅供参考，实际商品以您收到的为准。</p>
+      <p>2. 您在本平台提交订单后，即视为向我们发出了购买商品的要约。</p>
+      <p>3. 我们有权在发现商品价格标示错误时，取消订单并通知您。</p>
+      <p>4. 订单付款后，如需取消，请联系客服处理。</p>
+
+      <h4>五、配送与收货</h4>
+      <p>1. 我们将按照您提供的收货地址进行配送，请确保地址信息准确。</p>
+      <p>2. 因您提供的地址信息错误导致的配送问题，我们不承担责任。</p>
+      <p>3. 您应在收到商品时进行验收，如有问题请及时联系客服。</p>
+
+      <h4>六、退换货政策</h4>
+      <p>1. 生鲜商品因其特殊性，一经签收，非质量问题不予退换。</p>
+      <p>2. 如商品存在质量问题，请在签收后24小时内联系客服，并提供相关证据。</p>
+      <p>3. 退换货的具体流程以本平台公示的退换货政策为准。</p>
+
+      <h4>七、知识产权</h4>
+      <p>本平台上的所有内容，包括但不限于文字、图片、音频、视频、软件、程序、版面设计等，均受知识产权法律法规保护。未经我们书面许可，您不得以任何方式使用。</p>
+
+      <h4>八、免责声明</h4>
+      <p>1. 因不可抗力（如自然灾害、政府行为等）导致的服务中断，我们不承担责任。</p>
+      <p>2. 因网络故障、黑客攻击等导致的服务中断或数据丢失，我们不承担责任。</p>
+      <p>3. 您通过本平台链接访问的第三方网站，我们不对其内容和安全性负责。</p>
+
+      <h4>九、协议修改</h4>
+      <p>我们有权根据需要修改本协议，并在本平台公告。修改后的协议一经公告即生效，成为本协议的一部分。如您在协议修改后继续使用本平台，即表示您接受修改后的协议。</p>
+
+      <h4>十、法律适用与争议解决</h4>
+      <p>本协议的解释、效力和争议的解决，适用中华人民共和国法律。如双方就本协议内容或其执行发生争议，应友好协商解决；协商不成的，任何一方均有权向本平台所在地人民法院提起诉讼。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal('serviceModal')">我已阅读</button>
+    </div>
+  </div>
+</div>
+
+<!-- 隐私政策弹窗 -->
+<div class="modal-overlay" id="privacyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🔒 隐私政策</h3>
+      <button class="modal-close" onclick="closeModal('privacyModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <h4>一、引言</h4>
+      <p>天天生鲜（以下简称"我们"）非常重视您的个人信息和隐私保护。本隐私政策旨在向您说明我们如何收集、使用、存储、共享和保护您的个人信息。</p>
+      <p>请您在使用我们的服务前，仔细阅读并充分理解本政策的全部内容。</p>
+
+      <h4>二、我们收集的信息</h4>
+      <p>在您使用我们的服务时，我们可能会收集以下信息：</p>
+      <ul>
+        <li><strong>账户信息：</strong>用户名、邮箱地址、密码（加密存储）等注册信息；</li>
+        <li><strong>订单信息：</strong>收货人姓名、联系电话、收货地址、订单商品等；</li>
+        <li><strong>浏览信息：</strong>浏览记录、搜索记录、收藏商品等；</li>
+        <li><strong>设备信息：</strong>设备型号、操作系统、浏览器类型等；</li>
+        <li><strong>日志信息：</strong>IP地址、访问时间、访问页面等。</li>
+      </ul>
+
+      <h4>三、我们如何使用信息</h4>
+      <p>我们收集的信息将用于以下目的：</p>
+      <ul>
+        <li>为您提供商品购买、订单处理、配送等核心服务；</li>
+        <li>验证您的身份，保障账户安全；</li>
+        <li>向您发送订单状态通知、验证码等服务信息；</li>
+        <li>改进我们的服务，提升用户体验；</li>
+        <li>进行数据分析，优化商品推荐；</li>
+        <li>预防和处理欺诈、安全等风险。</li>
+      </ul>
+
+      <h4>四、信息存储与保护</h4>
+      <p>1. 我们采用业界标准的安全技术和管理措施保护您的个人信息安全。</p>
+      <p>2. 您的密码经过加密存储，我们无法直接查看。</p>
+      <p>3. 我们会采取合理措施，防止个人信息的丢失、不当使用、未经授权的访问或泄露。</p>
+      <p>4. 我们仅在本政策所述目的所必需的期限内保留您的个人信息。</p>
+
+      <h4>五、信息共享与披露</h4>
+      <p>未经您的同意，我们不会向第三方共享您的个人信息，但以下情况除外：</p>
+      <ul>
+        <li>为完成交易目的，向物流服务商提供收货信息；</li>
+        <li>根据法律法规的要求，向有权机关提供；</li>
+        <li>为保护我们或公众的权利、财产或安全；</li>
+        <li>在获得您明确同意后的其他情况。</li>
+      </ul>
+
+      <h4>六、Cookie 和类似技术</h4>
+      <p>我们使用 Cookie 和类似技术来：</p>
+      <ul>
+        <li>保持您的登录状态；</li>
+        <li>记住您的偏好设置；</li>
+        <li>分析服务使用情况；</li>
+        <li>提供个性化的内容推荐。</li>
+      </ul>
+      <p>您可以通过浏览器设置管理或删除 Cookie，但这可能影响部分功能的正常使用。</p>
+
+      <h4>七、您的权利</h4>
+      <p>您对您的个人信息享有以下权利：</p>
+      <ul>
+        <li><strong>访问权：</strong>查看您的个人信息；</li>
+        <li><strong>更正权：</strong>更正不准确的个人信息；</li>
+        <li><strong>删除权：</strong>在特定情况下删除您的个人信息；</li>
+        <li><strong>注销权：</strong>注销您的账户并删除相关信息。</li>
+      </ul>
+
+      <h4>八、未成年人保护</h4>
+      <p>我们非常重视对未成年人个人信息的保护。如果您是未满18周岁的未成年人，请在您的监护人的陪同下阅读本政策，并在取得监护人同意后使用我们的服务。</p>
+
+      <h4>九、隐私政策的更新</h4>
+      <p>我们可能会不时更新本隐私政策。更新后的政策将在本平台公告，并自公告之日起生效。重大变更时，我们会通过站内通知等方式告知您。</p>
+
+      <h4>十、联系我们</h4>
+      <p>如您对本隐私政策有任何疑问、意见或建议，可通过以下方式联系我们：</p>
+      <ul>
+        <li>客服邮箱：service@tiantian.com</li>
+        <li>客服电话：400-XXX-XXXX</li>
+        <li>工作时间：周一至周日 9:00-21:00</li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal('privacyModal')">我已阅读</button>
+    </div>
+  </div>
+</div>
 
 <script>
 function getCookie(name) {
@@ -424,28 +675,28 @@ function clearFieldErrors(prefix) {
   });
 }
 
-function sendSmsCode() {
-  const phone = document.getElementById('regPhone').value.trim();
-  if (!/^1\d{10}$/.test(phone)) {
-    showToast('请先输入正确的11位手机号码');
+function sendEmailCode() {
+  const email = document.getElementById('regEmail').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('请先输入正确的邮箱地址');
     return;
   }
 
-  const btn = document.getElementById('smsBtn');
+  const btn = document.getElementById('emailCodeBtn');
   btn.disabled = true;
 
-  fetch('/user/send-sms-code/', {
+  fetch('/user/send-email-code/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-CSRFToken': getCookie('csrftoken')
     },
-    body: JSON.stringify({ phone })
+    body: JSON.stringify({ email })
   })
   .then(response => response.json())
   .then(data => {
     if (data.code === 200) {
-      showToast('验证码已发送到您的手机');
+      showToast('验证码已发送到您的邮箱');
       let seconds = 60;
       btn.textContent = seconds + 's';
       const timer = setInterval(() => {
@@ -473,9 +724,8 @@ function handleRegister(e) {
   clearFieldErrors('reg');
 
   const username = document.getElementById('regUsername').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
-  const smsCode = document.getElementById('regSmsCode').value.trim();
   const email = document.getElementById('regEmail').value.trim();
+  const emailCode = document.getElementById('regEmailCode').value.trim();
   const password = document.getElementById('regPassword').value;
   const passwordConfirm = document.getElementById('regPasswordConfirm').value;
   let valid = true;
@@ -484,16 +734,12 @@ function handleRegister(e) {
     showFieldError('regUsernameError', '用户名至少 2 个字符');
     valid = false;
   }
-  if (!/^1\d{10}$/.test(phone)) {
-    showFieldError('regPhoneError', '请输入正确的11位手机号码');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showFieldError('regEmailError', '请输入正确的邮箱地址');
     valid = false;
   }
-  if (!smsCode || smsCode.length !== 6) {
-    showFieldError('regSmsCodeError', '请输入6位短信验证码');
-    valid = false;
-  }
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    showFieldError('regEmailError', '请输入有效的邮箱地址');
+  if (!emailCode || emailCode.length !== 6) {
+    showFieldError('regEmailCodeError', '请输入6位邮箱验证码');
     valid = false;
   }
   if (valid) {
@@ -505,9 +751,8 @@ function handleRegister(e) {
       },
       body: JSON.stringify({
         username,
-        phone,
-        sms_code: smsCode,
         email,
+        email_code: emailCode,
         password,
         password_confirm: passwordConfirm
       })
@@ -541,6 +786,47 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
     const form = document.getElementById('registerForm');
     if (form) form.dispatchEvent(new Event('submit'));
+  }
+});
+
+// 弹窗控制函数
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.style.display = 'flex';
+  // 滚动到顶部
+  modal.querySelector('.modal-body').scrollTop = 0;
+  requestAnimationFrame(() => {
+    modal.classList.add('open');
+  });
+  // 阻止背景滚动
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.classList.remove('open');
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 300);
+  // 恢复背景滚动
+  document.body.style.overflow = '';
+}
+
+// 点击弹窗外部关闭
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal(this.id);
+    }
+  });
+});
+
+// ESC 键关闭弹窗
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(modal => {
+      closeModal(modal.id);
+    });
   }
 });
 </script>

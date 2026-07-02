@@ -1,14 +1,18 @@
 import json
+import logging
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage
 from django.utils import timezone
+from django.db.models import Prefetch
 from datetime import timedelta
 
 from .models import Order, OrderGoods
 from goods.models import Goods, FlashSale, Combo
 from utils import redis_helper
+
+logger = logging.getLogger('order')
 
 
 @login_required
@@ -398,15 +402,21 @@ def create_order(request):
 
 @login_required
 def get_orders(request):
-    """获取订单列表（支持筛选和分页）"""
-    # 自动取消已过期的待付款订单
-    Order.objects.filter(
-        user=request.user,
+    """获取订单列表（支持筛选和分页）- 已优化查询"""
+    user = request.user
+
+    # 批量取消已过期的待付款订单（单次查询）
+    now = timezone.now()
+    expired_count = Order.objects.filter(
+        user=user,
         status='pending',
         is_delete=False,
         expire_time__isnull=False,
-        expire_time__lte=timezone.now()
+        expire_time__lte=now
     ).update(status='cancelled')
+
+    if expired_count > 0:
+        logger.info(f'用户 {user.username} 自动取消 {expired_count} 个过期订单')
 
     status = request.GET.get('status', '')
     page = request.GET.get('page', 1)
@@ -426,11 +436,24 @@ def get_orders(request):
     if page_size > 20:
         page_size = 20
 
-    # 查询订单
+    # 优化查询：使用 select_related 和 prefetch_related
+    # 使用 Prefetch 对象更精确地控制预加载
+    goods_prefetch = Prefetch(
+        'goods_items',
+        queryset=OrderGoods.objects.select_related('goods').only(
+            'id', 'goods__id', 'goods__name', 'goods__image',
+            'price', 'quantity'
+        )
+    )
+
     orders = Order.objects.filter(
-        user=request.user,
+        user=user,
         is_delete=False
-    ).prefetch_related('goods_items__goods')
+    ).prefetch_related(goods_prefetch).only(
+        'id', 'order_no', 'total_amount', 'status',
+        'receiver_name', 'receiver_mobile', 'receiver_address',
+        'remark', 'create_time', 'expire_time'
+    )
 
     # 按状态筛选
     if status and status != 'all':
@@ -473,12 +496,29 @@ def get_orders(request):
             'goods_items': goods_items,
         })
 
-    # 统计各状态订单数量
-    status_counts = {}
-    all_orders = Order.objects.filter(user=request.user, is_delete=False)
-    status_counts['all'] = all_orders.count()
-    for status_code, _ in Order.STATUS_CHOICES:
-        status_counts[status_code] = all_orders.filter(status=status_code).count()
+    # 优化：使用单次聚合查询统计各状态订单数量
+    from django.db.models import Count, Case, When, IntegerField
+
+    status_counts_result = Order.objects.filter(
+        user=user,
+        is_delete=False
+    ).aggregate(
+        all_count=Count('id'),
+        pending_count=Count(Case(When(status='pending', then=1), output_field=IntegerField())),
+        paid_count=Count(Case(When(status='paid', then=1), output_field=IntegerField())),
+        shipped_count=Count(Case(When(status='shipped', then=1), output_field=IntegerField())),
+        completed_count=Count(Case(When(status='completed', then=1), output_field=IntegerField())),
+        cancelled_count=Count(Case(When(status='cancelled', then=1), output_field=IntegerField())),
+    )
+
+    status_counts = {
+        'all': status_counts_result['all_count'],
+        'pending': status_counts_result['pending_count'],
+        'paid': status_counts_result['paid_count'],
+        'shipped': status_counts_result['shipped_count'],
+        'completed': status_counts_result['completed_count'],
+        'cancelled': status_counts_result['cancelled_count'],
+    }
 
     return JsonResponse({
         'code': 200,
@@ -636,7 +676,6 @@ def payment_page(request, order_id):
 
     # 只有待付款状态的订单才能进入支付页面
     if order.status != 'pending':
-        from django.shortcuts import redirect
         return redirect('/home/')
 
     goods_items = order.goods_items.select_related('goods').all()
@@ -667,7 +706,7 @@ def confirm_payment(request, order_id):
     except json.JSONDecodeError:
         data = {}
 
-    payment_method = data.get('payment_method', 'wechat')
+    payment_method = data.get('payment_method', 'mock')
 
     # 模拟支付成功，更新订单状态
     order.status = 'paid'

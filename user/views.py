@@ -1,5 +1,5 @@
-from django.shortcuts import render , redirect
-from django.contrib.auth import authenticate ,  login ,logout
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 import json
@@ -7,36 +7,46 @@ import random
 import logging
 
 from utils import redis_helper
+from utils.throttle import (
+    rate_limit, user_rate_limit,
+    login_limiter, register_limiter, sms_limiter, get_client_ip
+)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('user')
 
 
-#用户登录页面
-def user_login( request):
+@rate_limit(login_limiter, error_msg='登录尝试过于频繁，请1分钟后再试')
+def user_login(request):
+    """用户登录"""
     if request.method == 'GET':
         return render(request, 'login.html')
-    #获取前端数据
-    elif request.method == 'POST':
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
 
-        #验证用户
-        user = authenticate(request , username=username, password=password)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        ip = get_client_ip(request)
+
+        if not username or not password:
+            return JsonResponse({'code': 400, 'msg': '用户名和密码不能为空'})
+
+        # 验证用户
+        user = authenticate(request, username=username, password=password)
         if user is not None:
-            #登录成功
             login(request, user)
+            logger.info(f'用户登录成功: {username} (IP: {ip})')
             return JsonResponse({
                 'code': 200,
                 'msg': '登录成功',
                 'url': '/home/',
-                'data':{
+                'data': {
                     'username': user.username,
                     'email': user.email,
-                    'is_authenticated': True,    #添加登录状态标记
+                    'is_authenticated': True,
                 }
             })
         else:
+            logger.warning(f'用户登录失败: {username} (IP: {ip})')
             return JsonResponse({
                 'code': 400,
                 'msg': '用户名或密码错误',
@@ -45,79 +55,64 @@ def user_login( request):
 
 
 
-
-
-
-def user_register( request):
+@rate_limit(register_limiter, error_msg='注册请求过于频繁，请1分钟后再试')
+def user_register(request):
+    """用户注册"""
     if request.method == 'GET':
         return render(request, 'register.html')
 
     elif request.method == 'POST':
         from .models import UserInfo
         data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        email = data.get('email')
-        phone = data.get('phone')
-        sms_code = data.get('sms_code')
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        email = data.get('email', '').strip()
+        email_code = data.get('email_code', '').strip()
+        ip = get_client_ip(request)
 
-        #检查用户是否存在
+        # 参数校验
+        if not username or len(username) < 2:
+            return JsonResponse({'code': 400, 'msg': '用户名至少2个字符'})
+        if not password or len(password) < 6:
+            return JsonResponse({'code': 400, 'msg': '密码至少6位'})
+        if not email:
+            return JsonResponse({'code': 400, 'msg': '请输入邮箱地址'})
+        if not email_code:
+            return JsonResponse({'code': 400, 'msg': '请输入邮箱验证码'})
+
+        # 检查用户是否存在
         if UserInfo.objects.filter(username=username).exists():
-            return JsonResponse({
-                'code': 400,
-                'msg': '用户已存在',
-            })
+            logger.warning(f'注册失败 - 用户名已存在: {username} (IP: {ip})')
+            return JsonResponse({'code': 400, 'msg': '用户已存在'})
 
         # 检查邮箱是否已注册
-        if email and UserInfo.objects.filter(email=email).exists():
-            return JsonResponse({
-                'code': 400,
-                'msg': '该邮箱已注册',
-            })
+        if UserInfo.objects.filter(email=email).exists():
+            logger.warning(f'注册失败 - 邮箱已注册: {email} (IP: {ip})')
+            return JsonResponse({'code': 400, 'msg': '该邮箱已注册'})
 
-        # 检查手机号是否已注册
-        if UserInfo.objects.filter(phone=phone).exists():
-            return JsonResponse({
-                'code': 400,
-                'msg': '该手机号已注册',
-            })
-
-        # 验证短信验证码
-        if not sms_code:
-            return JsonResponse({
-                'code': 400,
-                'msg': '请输入短信验证码',
-            })
-
-        stored_code = redis_helper.get_sms_code(phone)
+        # 验证邮箱验证码
+        stored_code = redis_helper.get_email_code(email)
         if not stored_code:
-            return JsonResponse({
-                'code': 400,
-                'msg': '验证码已过期，请重新获取',
-            })
-        if str(stored_code) != str(sms_code):
-            return JsonResponse({
-                'code': 400,
-                'msg': '验证码错误',
-            })
+            return JsonResponse({'code': 400, 'msg': '验证码已过期，请重新获取'})
+        if str(stored_code) != str(email_code):
+            logger.warning(f'注册失败 - 验证码错误: {email} (IP: {ip})')
+            return JsonResponse({'code': 400, 'msg': '验证码错误'})
 
         # 验证通过，删除验证码
-        redis_helper.delete_sms_code(phone)
+        redis_helper.delete_email_code(email)
 
         user = UserInfo.objects.create_user(
             username=username,
             password=password,
             email=email,
         )
-        # 保存手机号
-        user.phone = phone
-        user.save()
 
+        logger.info(f'用户注册成功: {username} ({email}) (IP: {ip})')
         return JsonResponse({
             'code': 200,
             'msg': '注册成功',
             'url': '/user/login/',
-            'data':{
+            'data': {
                 'username': user.username,
                 'email': user.email,
             }
@@ -125,7 +120,7 @@ def user_register( request):
 
 
 def send_sms_code(request):
-    """发送短信验证码"""
+    """发送短信验证码（保留兼容）"""
     if request.method != 'POST':
         return JsonResponse({'code': 405, 'msg': '请求方法不允许'})
 
@@ -154,6 +149,42 @@ def send_sms_code(request):
     print(f'[短信验证码] 手机号: {phone}, 验证码: {code}')
 
     return JsonResponse({'code': 200, 'msg': '验证码已发送到您的手机'})
+
+
+@rate_limit(sms_limiter, error_msg='验证码发送过于频繁，请1分钟后再试')
+def send_email_code(request):
+    """发送邮箱验证码（使用 Celery 异步发送）"""
+    if request.method != 'POST':
+        return JsonResponse({'code': 405, 'msg': '请求方法不允许'})
+
+    from .models import UserInfo
+    import re
+
+    data = json.loads(request.body)
+    email = data.get('email', '').strip()
+    ip = get_client_ip(request)
+
+    # 校验邮箱格式
+    if not email or not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+        return JsonResponse({'code': 400, 'msg': '请输入正确的邮箱地址'})
+
+    # 检查邮箱是否已注册
+    if UserInfo.objects.filter(email=email).exists():
+        logger.warning(f'验证码发送失败 - 邮箱已注册: {email} (IP: {ip})')
+        return JsonResponse({'code': 400, 'msg': '该邮箱已注册'})
+
+    # 生成6位验证码
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+
+    # 存储到 Redis（5分钟有效）
+    redis_helper.save_email_code(email, code, ttl=300)
+
+    # 使用 Celery 异步发送邮件
+    from .tasks import send_email_code_task
+    send_email_code_task.delay(email, code)
+
+    logger.info(f'邮箱验证码任务已提交: {email} (IP: {ip})')
+    return JsonResponse({'code': 200, 'msg': '验证码正在发送中，请稍后查看邮箱'})
 
 
 @login_required
@@ -378,6 +409,60 @@ def get_user_info(request):
             'is_admin': user.is_admin,
         }
     })
+
+
+@login_required
+def delete_account(request):
+    """注销账号API - 永久删除用户及所有关联数据"""
+    if request.method != 'POST':
+        return JsonResponse({'code': 405, 'msg': '请求方法不允许'})
+
+    from .models import UserInfo, Address, Favorite
+    from django.contrib.auth import logout
+
+    data = json.loads(request.body)
+    password = data.get('password', '')
+
+    user = request.user
+
+    # 验证密码
+    if not user.check_password(password):
+        return JsonResponse({'code': 400, 'msg': '密码错误'})
+
+    try:
+        # 1. 删除浏览记录（Redis）
+        redis_helper.clear_browse_history(user.id)
+
+        # 2. 删除购物车数据（Redis）
+        redis_helper.clear_cart(user.id)
+        redis_helper.clear_combo_cart(user.id)
+
+        # 3. 删除收货地址
+        Address.objects.filter(user=user).delete()
+
+        # 4. 删除收藏记录
+        Favorite.objects.filter(user=user).delete()
+
+        # 5. 登出用户
+        logout(request)
+
+        # 6. 删除用户账号（硬删除，释放用户名和邮箱）
+        username = user.username
+        email = user.email
+        user.delete()
+
+        logger.info(f'[账号注销] 用户 {username}({email}) 已注销账号')
+        print(f'[账号注销] 用户 {username}({email}) 已注销账号')
+
+        return JsonResponse({
+            'code': 200,
+            'msg': '账号已注销',
+            'url': '/home/',
+        })
+
+    except Exception as e:
+        logger.error(f'账号注销失败: {e}')
+        return JsonResponse({'code': 500, 'msg': '注销失败，请稍后重试'})
 
 
 @login_required

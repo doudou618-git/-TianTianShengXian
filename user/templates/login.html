@@ -205,6 +205,35 @@
       opacity: 1;
     }
 
+    .admin-hint {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border: 1px dashed #2e7d32;
+    }
+    .admin-hint .hint-title {
+      font-size: 0.85rem;
+      color: #2e7d32;
+      font-weight: 600;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .admin-hint .hint-content {
+      font-size: 0.8rem;
+      color: #666;
+      line-height: 1.8;
+    }
+    .admin-hint .hint-content p {
+      margin: 0;
+      text-align: center;
+    }
+    .admin-hint .hint-content strong {
+      color: #333;
+      font-weight: 600;
+    }
+
     @media (max-width: 480px) {
       .login-wrapper { padding: 16px; }
       .form-content { padding: 24px 20px 28px; }
@@ -254,6 +283,14 @@
       <div class="register-link">
         还没有账号？<a href="/user/register/">立即注册</a>
       </div>
+    </div>
+  </div>
+
+  <div class="admin-hint">
+    <div class="hint-title">管理员账号</div>
+    <div class="hint-content">
+      <p>用户名: <strong>admin</strong></p>
+      <p>密码: <strong>admin123</strong></p>
     </div>
   </div>
 </div>

@@ -5,7 +5,8 @@ urlpatterns = [
     #用户路由
     path('login/', views.user_login),# 登录
     path('register/' , views.user_register), #注册
-    path('send-sms-code/', views.send_sms_code),# 发送短信验证码
+    path('send-sms-code/', views.send_sms_code),# 发送短信验证码（保留兼容）
+    path('send-email-code/', views.send_email_code),# 发送邮箱验证码
     path('logout/', views.user_logout),#退出登录
 
     path('address/', views.get_user_address),#获取已经登录的用户地址
@@ -18,6 +19,7 @@ urlpatterns = [
     path('center/', views.user_center),#个人中心页面
     path('avatar/upload/', views.upload_avatar),#上传头像
     path('info/', views.get_user_info),#获取用户信息
+    path('delete-account/', views.delete_account),#注销账号
 
     # 浏览记录
     path('history/add/', views.add_browse_history),#添加浏览记录

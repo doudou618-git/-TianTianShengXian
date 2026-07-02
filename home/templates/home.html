@@ -2238,9 +2238,14 @@ function startCountdown() {
     const h = Math.floor(total / 3600);
     const m = Math.floor((total % 3600) / 60);
     const s = total % 60;
-    document.getElementById('cdH').textContent = String(h).padStart(2, '0');
-    document.getElementById('cdM').textContent = String(m).padStart(2, '0');
-    document.getElementById('cdS').textContent = String(s).padStart(2, '0');
+    const cdH = document.getElementById('cdH');
+    const cdM = document.getElementById('cdM');
+    const cdS = document.getElementById('cdS');
+    if (cdH && cdM && cdS) {
+      cdH.textContent = String(h).padStart(2, '0');
+      cdM.textContent = String(m).padStart(2, '0');
+      cdS.textContent = String(s).padStart(2, '0');
+    }
   }, 1000);
 }
 

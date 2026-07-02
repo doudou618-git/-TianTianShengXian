@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 from django.test import TestCase, Client
 from django.urls import reverse
 from .models import UserInfo, Address, Favorite
@@ -76,12 +77,14 @@ class UserRegisterTest(TestCase):
             'username': 'newuser',
             'password': 'newpass123',
             'email': 'new@example.com',
-            'phone': '13800138000',
-            'sms_code': '123456',
+            'email_code': '123456',
         }
 
-    def test_register_duplicate_username(self):
-        UserInfo.objects.create_user(username='newuser', password='p1')
+    @patch('user.views.redis_helper')
+    def test_register_duplicate_username(self, mock_redis):
+        """测试重复用户名"""
+        mock_redis.get_email_code.return_value = '123456'
+        UserInfo.objects.create_user(username='newuser', password='p1', email='existing@example.com')
         resp = self.client.post(
             '/user/register/',
             data=json.dumps(self.valid_data),
@@ -90,15 +93,18 @@ class UserRegisterTest(TestCase):
         self.assertEqual(resp.json()['code'], 400)
         self.assertIn('用户已存在', resp.json()['msg'])
 
-    def test_register_duplicate_phone(self):
-        UserInfo.objects.create_user(username='other', password='p1', phone='13800138000')
+    @patch('user.views.redis_helper')
+    def test_register_duplicate_email(self, mock_redis):
+        """测试重复邮箱"""
+        mock_redis.get_email_code.return_value = '123456'
+        UserInfo.objects.create_user(username='other', password='p1', email='new@example.com')
         resp = self.client.post(
             '/user/register/',
             data=json.dumps(self.valid_data),
             content_type='application/json'
         )
         self.assertEqual(resp.json()['code'], 400)
-        self.assertIn('手机号已注册', resp.json()['msg'])
+        self.assertIn('该邮箱已注册', resp.json()['msg'])
 
 
 class AddressTest(TestCase):
@@ -205,3 +211,64 @@ class FavoriteTest(TestCase):
         data = resp.json()
         self.assertEqual(data['code'], 200)
         self.assertEqual(len(data['data']['list']), 1)
+
+
+class UserInfoAPITest(TestCase):
+    """用户信息API测试"""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = UserInfo.objects.create_user(
+            username='testuser',
+            password='testpass123',
+            email='test@example.com'
+        )
+        self.client.force_login(self.user)
+
+    def test_get_user_info(self):
+        """测试获取用户信息"""
+        resp = self.client.get('/user/info/')
+        data = resp.json()
+        self.assertEqual(data['code'], 200)
+        self.assertEqual(data['data']['username'], 'testuser')
+        self.assertEqual(data['data']['email'], 'test@example.com')
+
+    def test_user_center_page(self):
+        """测试个人中心页面"""
+        resp = self.client.get('/user/center/')
+        self.assertEqual(resp.status_code, 200)
+
+
+class UserDeleteAccountTest(TestCase):
+    """用户注销测试"""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = UserInfo.objects.create_user(
+            username='testuser',
+            password='testpass123',
+            email='test@example.com'
+        )
+        self.client.force_login(self.user)
+
+    def test_delete_account_wrong_password(self):
+        """测试注销-错误密码"""
+        resp = self.client.post(
+            '/user/delete-account/',
+            data=json.dumps({'password': 'wrongpass'}),
+            content_type='application/json'
+        )
+        data = resp.json()
+        self.assertEqual(data['code'], 400)
+        self.assertTrue(UserInfo.objects.filter(username='testuser').exists())
+
+    def test_delete_account_success(self):
+        """测试注销成功"""
+        resp = self.client.post(
+            '/user/delete-account/',
+            data=json.dumps({'password': 'testpass123'}),
+            content_type='application/json'
+        )
+        data = resp.json()
+        self.assertEqual(data['code'], 200)
+        self.assertFalse(UserInfo.objects.filter(username='testuser').exists())

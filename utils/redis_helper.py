@@ -251,3 +251,24 @@ def get_sms_code(phone):
 def delete_sms_code(phone):
     """删除短信验证码"""
     cache.delete(_get_sms_code_key(phone))
+
+
+# ==================== 邮箱验证码操作 ====================
+
+def _get_email_code_key(email):
+    return f'email_code:{email}'
+
+
+def save_email_code(email, code, ttl=300):
+    """存储邮箱验证码，ttl 默认5分钟"""
+    cache.set(_get_email_code_key(email), code, ttl)
+
+
+def get_email_code(email):
+    """获取邮箱验证码"""
+    return cache.get(_get_email_code_key(email))
+
+
+def delete_email_code(email):
+    """删除邮箱验证码"""
+    cache.delete(_get_email_code_key(email))

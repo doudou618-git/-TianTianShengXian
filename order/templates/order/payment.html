@@ -228,10 +228,8 @@
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
+      background: #e8f5e9;
     }
-    .payment-icon.wechat { background: #e8f5e9; }
-    .payment-icon.alipay { background: #e3f2fd; }
-    .payment-icon.cod { background: #fff3e0; }
     .payment-name {
       flex: 1;
       font-size: 0.95rem;
@@ -483,27 +481,11 @@
     </div>
     <div class="card-body">
       <div class="payment-methods">
-        <div class="payment-method selected" onclick="selectPayment(this, 'wechat')">
-          <div class="payment-icon wechat">&#128174;</div>
+        <div class="payment-method selected" onclick="selectPayment(this, 'mock')">
+          <div class="payment-icon">&#128178;</div>
           <div>
-            <div class="payment-name">微信支付</div>
-            <div class="payment-desc">使用微信扫码支付</div>
-          </div>
-          <div class="payment-radio"></div>
-        </div>
-        <div class="payment-method" onclick="selectPayment(this, 'alipay')">
-          <div class="payment-icon alipay">&#128178;</div>
-          <div>
-            <div class="payment-name">支付宝支付</div>
-            <div class="payment-desc">使用支付宝扫码支付</div>
-          </div>
-          <div class="payment-radio"></div>
-        </div>
-        <div class="payment-method" onclick="selectPayment(this, 'cod')">
-          <div class="payment-icon cod">&#128666;</div>
-          <div>
-            <div class="payment-name">货到付款</div>
-            <div class="payment-desc">收到商品后再付款</div>
+            <div class="payment-name">模拟支付</div>
+            <div class="payment-desc">测试环境，点击直接完成支付</div>
           </div>
           <div class="payment-radio"></div>
         </div>
@@ -523,7 +505,7 @@
   <div class="success-box">
     <div class="success-icon" style="background:#fff3e0;">&#128179;</div>
     <div class="success-title">确认支付</div>
-    <div class="success-desc">请选择支付方式后确认</div>
+    <div class="success-desc">确定要支付此订单吗？</div>
     <div class="success-order">支付金额：<span style="color:var(--danger);font-weight:700;font-size:1.3rem;">&#165;{{ order.total_amount }}</span></div>
     <div class="success-btns">
       <button class="btn btn-outline" onclick="cancelPayToPending()">取消支付</button>
@@ -556,7 +538,7 @@
 
 <script>
 const orderId = {{ order.id }};
-let selectedPayment = 'wechat';
+let selectedPayment = 'mock';
 
 function selectPayment(el, method) {
   document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
@@ -575,6 +557,8 @@ function closePayConfirm() {
 
 async function doConfirmPay() {
   closePayConfirm();
+
+  // 模拟支付
   try {
     const response = await fetch(`/order/${orderId}/pay/confirm/`, {
       method: 'POST',
